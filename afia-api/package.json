@@ -1,0 +1,16 @@
+{
+  "name": "afia-api",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.95.3",
+    "hono": "^4.11.9"
+  },
+  "devDependencies": {
+    "wrangler": "^4.4.0"
+  }
+}
