@@ -1,4 +1,4 @@
-Project Afia: Brand & UX/UI Identity Guidelines (NEOA Style)
+Neoa: Brand & UX/UI Identity Guidelines (NEOA Style)
 This document translates the NEOA Gottwaldmann Ltd visual identity into a digital design language optimized for a premium, high-trust marketplace.
 
 1. AESTHETIC: "THE MODERN TRADITIONALIST"

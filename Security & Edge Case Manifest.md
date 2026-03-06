@@ -1,4 +1,4 @@
-Project Afia: Senior Architect's Security & Edge Case Manifest
+Neoa: Senior Architect's Security & Edge Case Manifest
 This document outlines critical vulnerabilities and operational edge cases that must be mitigated during the implementation phase.
 1. FINANCIAL SECURITY (THE "DOUBLE-SPEND" RISK)
 The Race Condition: If a buyer clicks "Confirm Delivery" multiple times rapidly, or if a webhook from a carrier is sent twice, can the system trigger two payout entries?

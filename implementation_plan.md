@@ -1,4 +1,4 @@
-# Project Afia — Production Implementation Plan (v5.0)
+# Neoa — Production Implementation Plan (v5.0)
 
 > **Goal**: Build a complete, production-ready cross-border escrow marketplace.
 > **Principle**: Modular — each module is buildable, testable, and deployable independently.
@@ -52,56 +52,59 @@
 
 ## Module Breakdown
 
-### MODULE 1: Design System & Brand Identity
+### MODULE 1: Design System & Brand Identity ✅ COMPLETE
 **Source**: UX/UI Identity Guidelines
 **Goal**: Establish the visual foundation before building any pages.
 
-- [ ] **1.1** Create design tokens (CSS variables) for NEOA palette
+- [x] **1.1** Create design tokens (CSS variables) for NEOA palette
   - Primary: `#1A2332` (Deep Navy)
   - Secondary: `#E5E7EB` (Soft Platinum)
   - Accent: `#C5A059` (Old Gold)
-  - Success: `#059669` (Emerald)
+  - Success: `#059669` (Emerald → `neoa-emerald` to avoid Tailwind conflict)
   - Warning: `#DC2626` (Ruby)
-- [ ] **1.2** Install & configure typography (Playfair Display + Inter via Google Fonts)
-- [ ] **1.3** Create reusable UI components library:
-  - Button (Primary, Secondary, Danger, Gold)
-  - Input (Text, Email, Password, File Upload)
-  - Card (Product, Order, Status)
-  - Badge (Verified, Disputed, Pending)
-  - Modal (Confirmation dialogs, payments)
-  - Skeleton Loader (shimmer effect per UX guidelines)
-  - Step Progress Tracker (10-step order flow)
-  - Toast Notifications
-- [ ] **1.4** Implement Framer Motion animation presets (fade-in, slide-up, scale)
-- [ ] **1.5** Build responsive layout shell (sidebar nav, mobile thumb-zone bottom nav)
+- [x] **1.2** Install & configure typography (Playfair Display + Inter via Google Fonts)
+- [x] **1.3** Create reusable UI components library:
+  - Button (Primary, Secondary, Danger, Gold, Ghost) + loading & disabled states
+  - Input (Text, Email, Password with toggle visibility, error state)
+  - Card (with hover animation, Header/Footer sub-components)
+  - Badge (Verified, Disputed, Pending, Locked, Released, Default) + pulse dot
+  - Modal (backdrop blur, spring animation, Escape key, body scroll lock)
+  - Skeleton Loader (shimmer animation, multi-line, Card/Row patterns)
+  - Step Progress Tracker (10-step order flow with animated connectors)
+  - Toast Notifications (success/error/info, auto-dismiss, slide-out)
+- [x] **1.4** Implement Framer Motion animation presets (fade-in, slide-up, scale, stagger)
+- [x] **1.5** Build responsive layout shell (AppShell: sidebar nav, mobile drawer, thumb-zone bottom nav)
 
-**TEST**: Visual regression — screenshot each component in Storybook-style page.
+**TEST**: ✅ Visual regression verified — DesignShowcase page renders all components correctly.
 
 ---
 
-### MODULE 2: Authentication & User Management
+### MODULE 2: Authentication & User Management 🚧 IN PROGRESS
 **Source**: Technical Blueprint §2 (RBAC Matrix), Security Manifest §5
 **Goal**: Real Supabase Auth with role-based access control.
 
-- [ ] **2.1** Database: Add `handle_new_user()` trigger to auto-create profile on signup
-- [ ] **2.2** Build Auth pages:
-  - Signup (Email + Password, with role selection: Buyer or Vendor)
-  - Login
-  - Forgot Password
-  - Email Verification landing
-- [ ] **2.3** Build Auth context provider (`useAuth` hook)
-- [ ] **2.4** Implement route guards:
-  - `/` — Guest (public catalog)
-  - `/dashboard` — Buyer only
-  - `/vendor` — Verified Vendor only
-  - `/admin` — Super Admin only
+- [x] **2.1** Database: Add `handle_new_user()` trigger to auto-create profile on signup
+  - ✅ Trigger created on `auth.users` → `public.profiles`
+  - ✅ Extracts `full_name`, `role`, `email` from signup metadata
+  - ✅ Added `email` and `avatar_url` columns to profiles
+- [x] **2.2** Build Auth pages:
+  - ✅ Login (Email + Password, error handling)
+  - ✅ Signup (with role selection: Buyer or Vendor, email verification flow)
+  - ✅ Forgot Password (reset link via Supabase)
+  - ✅ Premium AuthLayout (navy branding panel + form)
+- [x] **2.3** Build Auth context provider (`useAuth` hook)
+  - ✅ AuthProvider with session management
+  - ✅ Auto-fetch profile on login/signup
+  - ✅ onAuthStateChange listener
+- [x] **2.4** Implement route guards:
+  - ✅ RouteGuard component with role checking
+  - ✅ Admin view requires ADMIN/SUPER_ADMIN role
+  - [ ] Full router integration (pending: react-router)
 - [ ] **2.5** Implement MFA for Super Admin (Supabase TOTP)
-- [ ] **2.6** Update RLS policies for production:
-  - Profiles: Users see own profile; Admins see all
-  - Products: Public read if `is_active`; Vendor can CRUD own products
-  - Orders: Buyer/Vendor see own orders; Admin sees all
-  - Escrow Ledger: Admin-only read/write
-  - Payout Queue View: Admin-only select
+- [x] **2.6** RLS policies active on all tables:
+  - ✅ Profiles: Users see own; Admins see all
+  - ✅ Products, Orders, Escrow: RLS enabled
+  - ✅ Service role can insert profiles (trigger)
 
 **TESTS**:
 - [ ] T2.1: Signup creates profile with correct role
@@ -271,31 +274,54 @@
 
 ---
 
-### MODULE 8: Real Payment Integrations
+### MODULE 8: Real Payment Integrations ✅
 **Source**: Technical Blueprint §1 (Integrations)
 **Goal**: Replace mock components with real sandbox APIs.
 
-- [ ] **8.1** Paystack (Collection):
+- [x] **8.1** Paystack (Collection):
   - Initialize transaction (server-side)
   - Inline payment popup (client-side)
   - Webhook handler with signature verification
   - Refund API integration
-- [ ] **8.2** Wise (Payouts):
+  - Verify Transaction API (server-side)
+  - Transfer API (NGN vendor payouts)
+  - Transfer Recipient creation
+  - Account Number Resolution (anti-fraud)
+  - Bank List API
+- [x] **8.2** Wise (Payouts):
   - Create recipient profiles
+  - Create quotes with live FX rates
   - Create + fund transfers
-  - Batch transfer execution
+  - Batch transfer execution (real API)
   - Webhook for transfer status
-- [ ] **8.3** SmileID (KYC):
+  - Live FX rate endpoint with 5-min cache
+- [x] **8.3** SmileID (KYC):
   - Enhanced KYC flow (BVN + Selfie)
+  - Biometric KYC (BVN + Selfie verification)
   - Webhook for verification result
   - Auto-update profile `kyc_level` on success
+  - KYC status polling (fallback)
+  - Frontend multi-step KYC flow with camera/upload
+- [x] **8.4** Vendor Settings Page:
+  - Bank account setup with Paystack verification
+  - KYC verification status + trigger
+  - Payout information guide
+- [x] **8.5** Database Migration:
+  - Wise transfer tracking columns
+  - Paystack refund/transfer tracking
+  - SmileID KYC columns
+  - Vendor bank account fields
+- [x] **8.6** Frontend Enhancements:
+  - Live FX rates from backend (Wise API with fallback)
+  - Server-side payment verification hook
+  - Enhanced currency lib with async rate fetching
 
 **TESTS**:
-- [ ] T8.1: Paystack sandbox charge succeeds + webhook fires
-- [ ] T8.2: Wise sandbox transfer reaches "funds_converted" state
-- [ ] T8.3: SmileID sandbox returns verification result
-- [ ] T8.4: Invalid Paystack webhook signature is rejected
-- [ ] T8.5: Wise transfer with idempotency key prevents double-send
+- [x] T8.1: Paystack sandbox charge succeeds + webhook fires
+- [x] T8.2: Wise sandbox transfer reaches "funds_converted" state
+- [x] T8.3: SmileID sandbox returns verification result
+- [x] T8.4: Invalid Paystack webhook signature is rejected
+- [x] T8.5: Wise transfer with idempotency key prevents double-send
 
 ---
 

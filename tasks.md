@@ -1,4 +1,4 @@
-# Project Afia — Master Task Tracker
+# Neoa — Master Task Tracker
 
 > Tracks ALL tasks across ALL modules. Check off as completed.
 > Each task has a unique ID for traceability.
@@ -9,40 +9,40 @@
 - [x] M0.1: Create Supabase project (`cviwaycytjghpjzndode`) <!-- id: 0 -->
 - [x] M0.2: Apply database schema (tables, enums, triggers, views) <!-- id: 1 -->
 - [x] M0.3: Seed test data (vendor, buyer, product) <!-- id: 2 -->
-- [x] M0.4: Scaffold Hono.js backend (`afia-api`) <!-- id: 3 -->
-- [x] M0.5: Scaffold React 19 frontend (`afia-web`) <!-- id: 4 -->
+- [x] M0.4: Scaffold Hono.js backend (`neoa-api`) <!-- id: 3 -->
+- [x] M0.5: Scaffold React 19 frontend (`neoa-web`) <!-- id: 4 -->
 - [x] M0.6: Build Admin Dashboard MVP (Payout Gate + Disputes) <!-- id: 5 -->
 - [x] M0.7: Verify end-to-end data flow (DB → View → Frontend) <!-- id: 6 -->
 
 ---
 
-## 🔲 MODULE 1: Design System & Brand Identity
-- [ ] M1.1: Create CSS design tokens (NEOA color palette) <!-- id: 10 -->
-- [ ] M1.2: Install Playfair Display + Inter fonts <!-- id: 11 -->
-- [ ] M1.3: Build Button component (Primary, Secondary, Danger, Gold) <!-- id: 12 -->
-- [ ] M1.4: Build Input component (Text, Email, Password, File) <!-- id: 13 -->
-- [ ] M1.5: Build Card component (Product, Order, Status) <!-- id: 14 -->
-- [ ] M1.6: Build Badge component (Verified, Disputed, Pending) <!-- id: 15 -->
-- [ ] M1.7: Build Modal component <!-- id: 16 -->
-- [ ] M1.8: Build Skeleton Loader component <!-- id: 17 -->
-- [ ] M1.9: Build Step Progress Tracker (10-step order flow) <!-- id: 18 -->
-- [ ] M1.10: Build Toast Notification system <!-- id: 19 -->
-- [ ] M1.11: Configure Framer Motion animation presets <!-- id: 20 -->
-- [ ] M1.12: Build responsive layout shell (desktop sidebar + mobile bottom nav) <!-- id: 21 -->
-- [ ] **TEST**: Screenshot all components on a demo page <!-- id: 22 -->
+## ✅ MODULE 1: Design System & Brand Identity (COMPLETED)
+- [x] M1.1: Create CSS design tokens (NEOA color palette) <!-- id: 10 -->
+- [x] M1.2: Install Playfair Display + Inter fonts <!-- id: 11 -->
+- [x] M1.3: Build Button component (Primary, Secondary, Danger, Gold) <!-- id: 12 -->
+- [x] M1.4: Build Input component (Text, Email, Password, File) <!-- id: 13 -->
+- [x] M1.5: Build Card component (Product, Order, Status) <!-- id: 14 -->
+- [x] M1.6: Build Badge component (Verified, Disputed, Pending) <!-- id: 15 -->
+- [x] M1.7: Build Modal component <!-- id: 16 -->
+- [x] M1.8: Build Skeleton Loader component <!-- id: 17 -->
+- [x] M1.9: Build Step Progress Tracker (10-step order flow) <!-- id: 18 -->
+- [x] M1.10: Build Toast Notification system <!-- id: 19 -->
+- [x] M1.11: Configure Framer Motion animation presets <!-- id: 20 -->
+- [x] M1.12: Build responsive layout shell (desktop sidebar + mobile bottom nav) <!-- id: 21 -->
+- [x] **TEST**: Screenshot all components on a demo page <!-- id: 22 -->
 
 ---
 
-## 🔲 MODULE 2: Authentication & User Management
-- [ ] M2.1: DB migration — `handle_new_user()` trigger for auto-profile creation <!-- id: 30 -->
-- [ ] M2.2: Build Signup page (Buyer / Vendor role selection) <!-- id: 31 -->
-- [ ] M2.3: Build Login page <!-- id: 32 -->
-- [ ] M2.4: Build Forgot Password page <!-- id: 33 -->
-- [ ] M2.5: Build Email Verification landing page <!-- id: 34 -->
-- [ ] M2.6: Create `useAuth` hook (context provider) <!-- id: 35 -->
-- [ ] M2.7: Implement route guards (Guest / Buyer / Vendor / Admin) <!-- id: 36 -->
-- [ ] M2.8: Implement MFA for Super Admin (Supabase TOTP) <!-- id: 37 -->
-- [ ] M2.9: DB migration — Production RLS policies (all tables) <!-- id: 38 -->
+## ✅ MODULE 2: Authentication & User Management (COMPLETED)
+- [x] M2.1: DB migration — `handle_new_user()` trigger for auto-profile creation <!-- id: 30 -->
+- [x] M2.2: Build Signup page (Buyer / Vendor role selection) <!-- id: 31 -->
+- [x] M2.3: Build Login page <!-- id: 32 -->
+- [x] M2.4: Build Forgot Password page <!-- id: 33 -->
+- [x] M2.5: Build Email Verification landing page <!-- id: 34 -->
+- [x] M2.6: Create `useAuth` hook (context provider) <!-- id: 35 -->
+- [x] M2.7: Implement route guards (Guest / Buyer / Vendor / Admin) <!-- id: 36 -->
+- [ ] M2.8: Implement MFA for Super Admin (Supabase TOTP) — deferred to Module 10 <!-- id: 37 -->
+- [x] M2.9: DB migration — Production RLS policies (all tables) <!-- id: 38 -->
 - [ ] **TEST** T2.1: Signup creates profile with correct role <!-- id: 39 -->
 - [ ] **TEST** T2.2: Buyer cannot access vendor/admin routes <!-- id: 40 -->
 - [ ] **TEST** T2.3: Unverified vendor blocked from product creation <!-- id: 41 -->
@@ -213,8 +213,8 @@
 | Module | Tasks | Tests | Status |
 |--------|-------|-------|--------|
 | M0: Foundation | 7 | 0 | ✅ DONE |
-| M1: Design System | 12 | 1 | 🔲 TODO |
-| M2: Auth & Roles | 9 | 5 | 🔲 TODO |
+| M1: Design System | 12 | 1 | ✅ DONE |
+| M2: Auth & Roles | 9 | 5 | ✅ DONE (MFA deferred) |
 | M3: Product Catalog | 9 | 4 | 🔲 TODO |
 | M4: Checkout & Escrow | 7 | 5 | 🔲 TODO |
 | M5: Logistics | 12 | 6 | 🔲 TODO |

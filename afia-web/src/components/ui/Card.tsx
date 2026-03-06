@@ -16,26 +16,29 @@ const paddingStyles = {
 }
 
 export default function Card({ children, className = '', hover = false, padding = 'md' }: CardProps) {
-    const Component = hover ? motion.div : 'div'
-    const motionProps = hover
-        ? {
-            whileHover: { y: -2, boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1)' },
-            transition: { type: 'spring', stiffness: 300, damping: 20 },
-        }
-        : {}
-
-    return (
-        <Component
-            className={`
+    const classes = `
         bg-white rounded-xl border border-platinum shadow-sm
         ${paddingStyles[padding]}
         ${hover ? 'cursor-pointer' : ''}
         ${className}
-      `}
-            {...motionProps}
-        >
+    `
+
+    if (hover) {
+        return (
+            <motion.div
+                className={classes}
+                whileHover={{ y: -2, boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1)' }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+                {children}
+            </motion.div>
+        )
+    }
+
+    return (
+        <div className={classes}>
             {children}
-        </Component>
+        </div>
     )
 }
 

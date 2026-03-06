@@ -19,15 +19,15 @@ const variantStyles: Record<ButtonVariant, string> = {
     danger:
         'bg-ruby text-white hover:bg-ruby-light shadow-md',
     gold:
-        'bg-gold text-navy-dark hover:bg-gold-light shadow-gold font-semibold',
+        'bg-gold text-navy-dark hover:bg-gold-light shadow-md font-semibold',
     ghost:
         'bg-transparent text-navy hover:bg-platinum-light',
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
-    sm: 'px-3 py-1.5 text-sm rounded-md gap-1.5',
-    md: 'px-5 py-2.5 text-sm rounded-lg gap-2',
-    lg: 'px-7 py-3.5 text-base rounded-xl gap-2.5',
+    sm: 'px-3 py-1.5 text-sm rounded-full gap-1.5',
+    md: 'px-5 py-2.5 text-sm rounded-full gap-2',
+    lg: 'px-7 py-3.5 text-base rounded-full gap-2.5',
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(

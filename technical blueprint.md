@@ -1,4 +1,4 @@
-Project Afia: Master Technical Blueprint (v4.0)
+Neoa: Master Technical Blueprint (v4.0)
 
 Project Vision: A high-trust, cross-border escrow marketplace connecting African vendors to global buyers with bank-grade security and localized logistics.
 

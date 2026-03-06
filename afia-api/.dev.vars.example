@@ -1,0 +1,29 @@
+# ────────────────────────────────────────────────
+# Neoa API — Local Development Secrets
+# Copy this file to .dev.vars and fill in your values
+# NEVER commit .dev.vars to Git!
+# ────────────────────────────────────────────────
+
+# Supabase — https://supabase.com/dashboard → Project → Settings → API
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_KEY=your-anon-key-here
+SUPABASE_SERVICE_KEY=your-service-role-key-here
+
+# Paystack — https://dashboard.paystack.com → Settings → API Keys
+PAYSTACK_SECRET_KEY=sk_test_YOUR_SECRET_KEY_HERE
+
+# Frontend URL (for CORS + callback redirects)
+FRONTEND_URL=http://localhost:5174
+
+# Admin master password for batch payout authorization
+ADMIN_MASTER_PASSWORD=change-me-in-production
+
+# Wise (TransferWise) — https://sandbox.transferwise.tech
+WISE_API_TOKEN=YOUR_WISE_SANDBOX_API_TOKEN_HERE
+WISE_PROFILE_ID=0
+WISE_WEBHOOK_SECRET=YOUR_WISE_WEBHOOK_SECRET_HERE
+
+# SmileID KYC — https://portal.smileidentity.com
+SMILEID_PARTNER_ID=YOUR_SMILEID_PARTNER_ID_HERE
+SMILEID_API_KEY=YOUR_SMILEID_API_KEY_HERE
+SMILEID_WEBHOOK_SECRET=YOUR_SMILEID_WEBHOOK_SECRET_HERE

@@ -1,7 +1,21 @@
-
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+if (!supabaseUrl || !supabaseKey) {
+    throw new Error(
+        'Missing Supabase env vars. Copy .env.example → .env.local and fill in your project values.'
+    )
+}
+
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+        // Persist session across tabs/refreshes
+        persistSession: true,
+        // Auto-refresh tokens before they expire
+        autoRefreshToken: true,
+        // Detect session from URL (for email confirm redirects)
+        detectSessionInUrl: true,
+    },
+})

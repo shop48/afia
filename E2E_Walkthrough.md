@@ -1,7 +1,7 @@
 
-# 🧪 Project Afia: End-to-End Demonstration Script
+# 🧪 Neoa: End-to-End Demonstration Script
 
-This document guides you through the complete lifecycle of an Escrow Transaction on Project Afia.
+This document guides you through the complete lifecycle of an Escrow Transaction on Neoa.
 
 ## 1. Prerequisites
 - **Admin Dashboard**: Open `http://localhost:5173/` (God Mode)
