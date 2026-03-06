@@ -25,7 +25,7 @@ export default function StepTracker({ steps, className = '' }: StepTrackerProps)
                 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold
                 transition-colors duration-300
                 ${step.status === 'completed'
-                                    ? 'bg-emerald text-white'
+                                    ? 'bg-neoa-emerald text-white'
                                     : step.status === 'active'
                                         ? 'bg-gold text-navy-dark ring-4 ring-gold/20'
                                         : 'bg-platinum text-platinum-dark'
@@ -54,7 +54,7 @@ export default function StepTracker({ steps, className = '' }: StepTrackerProps)
                             <div
                                 className={`
                   h-0.5 w-full rounded-full transition-colors duration-500
-                  ${step.status === 'completed' ? 'bg-emerald' : 'bg-platinum'}
+                  ${step.status === 'completed' ? 'bg-neoa-emerald' : 'bg-platinum'}
                 `}
                             />
                         </div>
@@ -65,7 +65,7 @@ export default function StepTracker({ steps, className = '' }: StepTrackerProps)
     )
 }
 
-// Pre-configured for the Afia 10-step order flow
+// Pre-configured for the Neoa 10-step order flow
 StepTracker.OrderFlow = function OrderFlowTracker({ currentStep }: { currentStep: number }) {
     const ORDER_STEPS = [
         'Checkout', 'Paid', 'Vaulted', 'Fulfilling',

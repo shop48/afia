@@ -1,4 +1,4 @@
--- PROJECT AFIA: DATABASE SCHEMA (v4.0)
+-- Neoa: DATABASE SCHEMA (v4.0)
 -- Purpose: Implementation of the "Digital Vault" and "Dual-Rail Logistics"
 -- Target: Supabase / PostgreSQL 15
 

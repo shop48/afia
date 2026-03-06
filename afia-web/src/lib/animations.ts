@@ -1,5 +1,5 @@
 /**
- * Framer Motion animation presets for Project Afia
+ * Framer Motion animation presets for Neoa
  * Based on UX Guidelines: "smooth = secure" perception
  */
 

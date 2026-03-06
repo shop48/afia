@@ -8,20 +8,20 @@ interface BadgeProps {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-    verified: 'bg-emerald/10 text-emerald border-emerald/30',
+    verified: 'bg-neoa-emerald/10 text-neoa-emerald border-neoa-emerald/30',
     pending: 'bg-gold/10 text-gold-dark border-gold/30',
     disputed: 'bg-ruby/10 text-ruby border-ruby/30',
     locked: 'bg-navy/10 text-navy border-navy/20',
-    released: 'bg-emerald/10 text-emerald border-emerald/30',
+    released: 'bg-neoa-emerald/10 text-neoa-emerald border-neoa-emerald/30',
     default: 'bg-platinum-light text-navy border-platinum-dark/30',
 }
 
 const dotColors: Record<BadgeVariant, string> = {
-    verified: 'bg-emerald',
+    verified: 'bg-neoa-emerald',
     pending: 'bg-gold',
     disputed: 'bg-ruby',
     locked: 'bg-navy',
-    released: 'bg-emerald',
+    released: 'bg-neoa-emerald',
     default: 'bg-platinum-dark',
 }
 

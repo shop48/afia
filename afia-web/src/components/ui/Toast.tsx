@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, AlertTriangle, Info, X } from 'lucide-react'
 
-type ToastVariant = 'success' | 'error' | 'info'
+type ToastVariant = 'success' | 'error' | 'info' | 'warning'
 
 interface Toast {
     id: string
@@ -14,12 +14,14 @@ const iconMap = {
     success: CheckCircle,
     error: AlertTriangle,
     info: Info,
+    warning: AlertTriangle,
 }
 
 const colorMap = {
-    success: 'bg-emerald text-white',
+    success: 'bg-neoa-emerald text-white',
     error: 'bg-ruby text-white',
     info: 'bg-navy text-white',
+    warning: 'bg-gold text-navy',
 }
 
 // Global state for toasts (simple pub/sub)

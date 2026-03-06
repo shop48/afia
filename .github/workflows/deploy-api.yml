@@ -1,0 +1,64 @@
+name: Deploy API to Cloudflare Workers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'afia-api/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: afia-api
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: afia-api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: afia-api
+          command: deploy --minify --env production
+          secrets: |
+            SUPABASE_URL
+            SUPABASE_KEY
+            SUPABASE_SERVICE_KEY
+            PAYSTACK_SECRET_KEY
+            FRONTEND_URL
+            ADMIN_MASTER_PASSWORD
+            WISE_API_TOKEN
+            WISE_PROFILE_ID
+            WISE_WEBHOOK_SECRET
+            SMILEID_PARTNER_ID
+            SMILEID_API_KEY
+            SMILEID_WEBHOOK_SECRET
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PAYSTACK_SECRET_KEY: ${{ secrets.PAYSTACK_SECRET_KEY }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          ADMIN_MASTER_PASSWORD: ${{ secrets.ADMIN_MASTER_PASSWORD }}
+          WISE_API_TOKEN: ${{ secrets.WISE_API_TOKEN }}
+          WISE_PROFILE_ID: ${{ secrets.WISE_PROFILE_ID }}
+          WISE_WEBHOOK_SECRET: ${{ secrets.WISE_WEBHOOK_SECRET }}
+          SMILEID_PARTNER_ID: ${{ secrets.SMILEID_PARTNER_ID }}
+          SMILEID_API_KEY: ${{ secrets.SMILEID_API_KEY }}
+          SMILEID_WEBHOOK_SECRET: ${{ secrets.SMILEID_WEBHOOK_SECRET }}

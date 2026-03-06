@@ -1,46 +1,74 @@
-
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import PayoutQueue from './PayoutQueue'
 import DisputeArbitration from './DisputeArbitration'
-import { ShieldAlert, CreditCard } from 'lucide-react'
+import VendorManagement from './VendorManagement'
+import AnalyticsOverview from './AnalyticsOverview'
+import AuditLog from './AuditLog'
+import AppShell from '../layout/AppShell'
+import { useAuth } from '../../contexts/AuthContext'
+
+// ═══════════════════════════════════════════════
+// MODULE 7: ADMIN DASHBOARD (GOD MODE)
+// 5-section hub: Payouts, Disputes, Vendors,
+// Analytics, Audit Log
+// ═══════════════════════════════════════════════
+
+// Components that use DARK theming (text-white, bg-navy-light, etc.)
+const DARK_THEMED_ROUTES = ['/admin', '/admin/vendors', '/admin/analytics', '/admin/audit-log']
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'PAYOUTS' | 'DISPUTES'>('PAYOUTS')
+    const { profile, role, signOut } = useAuth()
+    const [activePath, setActivePath] = useState('/admin')
+
+    const isDarkTheme = DARK_THEMED_ROUTES.includes(activePath)
+
+    const renderContent = () => {
+        switch (activePath) {
+            case '/admin/disputes':
+                return <DisputeArbitration />
+            case '/admin/vendors':
+                return <VendorManagement />
+            case '/admin/analytics':
+                return <AnalyticsOverview />
+            case '/admin/audit-log':
+                return <AuditLog />
+            default:
+                return <PayoutQueue />
+        }
+    }
 
     return (
-        <div className="flex h-screen bg-gray-100">
-            {/* Sidebar */}
-            <aside className="w-64 bg-gray-900 text-white flex flex-col">
-                <div className="p-6 border-b border-gray-800">
-                    <h1 className="text-2xl font-bold tracking-tight">Afia Admin</h1>
-                    <span className="text-xs text-yellow-500 font-mono">GOD MODE ENABLED</span>
-                </div>
-
-                <nav className="flex-1 p-4 space-y-2">
-                    <button
-                        onClick={() => setActiveTab('PAYOUTS')}
-                        className={`w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors ${activeTab === 'PAYOUTS' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800'
-                            }`}
-                    >
-                        <CreditCard className="w-5 h-5 mr-3" />
-                        Friday Payout Gate
-                    </button>
-
-                    <button
-                        onClick={() => setActiveTab('DISPUTES')}
-                        className={`w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors ${activeTab === 'DISPUTES' ? 'bg-red-600 text-white' : 'text-gray-400 hover:bg-gray-800'
-                            }`}
-                    >
-                        <ShieldAlert className="w-5 h-5 mr-3" />
-                        Dispute Arbitration
-                    </button>
-                </nav>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 overflow-auto">
-                {activeTab === 'PAYOUTS' ? <PayoutQueue /> : <DisputeArbitration />}
-            </main>
-        </div>
+        <AppShell
+            role={role as 'BUYER' | 'VENDOR' | 'ADMIN' | 'SUPER_ADMIN'}
+            activePath={activePath}
+            onNavigate={setActivePath}
+            userName={profile?.full_name || 'Admin'}
+            onLogout={signOut}
+        >
+            {isDarkTheme ? (
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    style={{
+                        margin: 'calc(-1 * clamp(1rem, 3vw, 2.5rem))',
+                        padding: 'clamp(1.5rem, 3vw, 2.5rem)',
+                        minHeight: '100vh',
+                        background: 'linear-gradient(135deg, var(--color-navy-dark) 0%, var(--color-navy) 100%)',
+                    }}
+                >
+                    {renderContent()}
+                </motion.div>
+            ) : (
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                >
+                    {renderContent()}
+                </motion.div>
+            )}
+        </AppShell>
     )
 }
