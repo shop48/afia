@@ -243,23 +243,57 @@ transition - all duration - 200 cursor - pointer border shrink - 0
         )
     }
 
-    // Guest view — public layout with Sign In footer
+    // Guest view — public layout with sticky header + Sign In
     return (
         <div className="min-h-screen bg-platinum-light">
+            {/* ══════ STICKY GUEST HEADER ══════ */}
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-platinum shadow-sm">
+                <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 clamp(1rem, 3vw, 4rem)' }}
+                    className="flex items-center justify-between h-14"
+                >
+                    {/* Logo */}
+                    <span className="font-[family-name:var(--font-heading)] text-xl font-bold tracking-tight text-navy">
+                        <span className="text-gold">N</span>eoa
+                    </span>
+
+                    {/* Auth Buttons */}
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <button
+                            id="guest-signin-btn"
+                            onClick={() => navigate('/login')}
+                            className="px-4 sm:px-5 py-2 text-sm font-semibold text-navy border border-platinum rounded-lg
+                                hover:border-gold hover:text-gold transition-all duration-200 cursor-pointer"
+                        >
+                            Sign In
+                        </button>
+                        <button
+                            id="guest-signup-btn"
+                            onClick={() => navigate('/signup')}
+                            className="px-4 sm:px-5 py-2 text-sm font-bold text-navy-dark bg-gold rounded-lg
+                                hover:bg-gold-light transition-all duration-200 cursor-pointer shadow-sm"
+                        >
+                            Create Account
+                        </button>
+                    </div>
+                </div>
+            </header>
+
             {catalogContent}
 
-            {/* ══════ NAVIGATION BAR ══════ */}
+            {/* ══════ FOOTER ══════ */}
             <div className="bg-white border-t border-platinum py-4">
-                <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 clamp(2rem, 5vw, 4rem)' }} className="flex items-center justify-between">
-                    <button
-                        onClick={() => navigate('/login')}
-                        className="text-sm text-navy hover:text-gold transition-colors cursor-pointer"
-                    >
-                        ← Sign In
-                    </button>
+                <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 clamp(2rem, 5vw, 4rem)' }}
+                    className="flex items-center justify-between"
+                >
                     <p className="text-xs text-platinum-dark">
                         Powered by <span className="font-[family-name:var(--font-heading)] font-bold"><span className="text-gold">N</span>eoa</span> Escrow
                     </p>
+                    <button
+                        onClick={() => navigate('/login')}
+                        className="text-xs text-navy hover:text-gold transition-colors cursor-pointer"
+                    >
+                        Sign In →
+                    </button>
                 </div>
             </div>
         </div>

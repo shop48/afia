@@ -122,7 +122,7 @@ function SidebarContent({
             <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
                 {links.map(link => (
                     <button
-                        key={link.path}
+                        key={link.path + link.label}
                         onClick={() => onNavigate?.(link.path)}
                         className={`
                             w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
@@ -147,9 +147,9 @@ function SidebarContent({
                 ))}
             </nav>
 
-            {/* User Footer */}
+            {/* User Footer with Logout */}
             <div className="p-4 border-t border-white/10 shrink-0">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 rounded-full bg-gold/20 flex items-center justify-center text-gold font-bold text-sm shrink-0">
                         {userName.charAt(0).toUpperCase()}
                     </div>
@@ -157,14 +157,17 @@ function SidebarContent({
                         <p className="text-sm font-medium truncate">{userName}</p>
                         <p className="text-xs text-white/50 capitalize">{role.toLowerCase().replace('_', ' ')}</p>
                     </div>
-                    <button
-                        onClick={onLogout}
-                        className="p-1.5 rounded-lg text-white/40 hover:text-ruby hover:bg-white/5 transition-colors cursor-pointer shrink-0"
-                        title="Logout"
-                    >
-                        <LogOut className="w-4 h-4" />
-                    </button>
                 </div>
+                <button
+                    id="sidebar-logout-btn"
+                    onClick={onLogout}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium
+                        text-white/70 hover:bg-ruby/15 hover:text-ruby transition-all duration-150 cursor-pointer
+                        border border-white/10 hover:border-ruby/30"
+                >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                </button>
             </div>
         </>
     )
@@ -182,9 +185,6 @@ export default function AppShell({ children, role = 'BUYER', activePath = '/', u
             <div className="flex min-h-screen">
 
                 {/* ── Spacer: reserves sidebar width in the flex row ── */}
-                {/* This is the KEY architectural element: it physically
-                    occupies 260px in the document flow, so the content
-                    area can never slide under the sidebar. */}
                 <div className="hidden lg:block w-sidebar shrink-0" aria-hidden="true" />
 
                 {/* ── Desktop Sidebar (fixed, visual layer) ── */}
@@ -200,9 +200,6 @@ export default function AppShell({ children, role = 'BUYER', activePath = '/', u
                 </aside>
 
                 {/* ── Main Content Area ── */}
-                {/* flex-1: fills remaining width after the spacer
-                    min-w-0: prevents flex child from overflowing
-                    overflow-hidden: clips any runaway children */}
                 <main className="flex-1 min-w-0 overflow-hidden pt-14 lg:pt-0 pb-16 lg:pb-0">
                     <div style={{ padding: 'clamp(1rem, 3vw, 2.5rem)' }}>
                         {children}
@@ -245,6 +242,7 @@ export default function AppShell({ children, role = 'BUYER', activePath = '/', u
                             transition={{ type: 'spring', stiffness: 300, damping: 28 }}
                             className="lg:hidden fixed inset-y-0 left-0 w-sidebar-mobile bg-navy text-white z-50 shadow-2xl flex flex-col"
                         >
+                            {/* Header with close */}
                             <div className="h-14 flex items-center justify-between px-5 border-b border-white/10 shrink-0">
                                 <span className="font-[family-name:var(--font-heading)] text-lg font-bold">
                                     <span className="text-gold">N</span>eoa
@@ -253,10 +251,12 @@ export default function AppShell({ children, role = 'BUYER', activePath = '/', u
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
+
+                            {/* Nav Links */}
                             <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
                                 {links.map(link => (
                                     <button
-                                        key={link.path}
+                                        key={link.path + link.label}
                                         onClick={() => { onNavigate?.(link.path); setSidebarOpen(false) }}
                                         className={`
                                             w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
@@ -271,6 +271,29 @@ export default function AppShell({ children, role = 'BUYER', activePath = '/', u
                                     </button>
                                 ))}
                             </nav>
+
+                            {/* User Footer + Logout (WAS MISSING!) */}
+                            <div className="p-4 border-t border-white/10 shrink-0">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-9 h-9 rounded-full bg-gold/20 flex items-center justify-center text-gold font-bold text-sm shrink-0">
+                                        {userName.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium truncate">{userName}</p>
+                                        <p className="text-xs text-white/50 capitalize">{role.toLowerCase().replace('_', ' ')}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    id="mobile-logout-btn"
+                                    onClick={() => { setSidebarOpen(false); onLogout?.() }}
+                                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium
+                                        text-white/70 hover:bg-ruby/15 hover:text-ruby transition-all duration-150 cursor-pointer
+                                        border border-white/10 hover:border-ruby/30"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    Sign Out
+                                </button>
+                            </div>
                         </motion.aside>
                     </>
                 )}
@@ -280,9 +303,9 @@ export default function AppShell({ children, role = 'BUYER', activePath = '/', u
                 MOBILE BOTTOM NAV ("Thumb Zone")
                ══════════════════════════════════════════ */}
             <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-platinum flex items-center justify-around h-14 z-30 shadow-[0_-2px_10px_rgb(0_0_0_/0.05)]">
-                {links.slice(0, 4).map(link => (
+                {links.slice(0, 3).map(link => (
                     <button
-                        key={link.path}
+                        key={link.path + link.label}
                         onClick={() => onNavigate?.(link.path)}
                         className={`
                             flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg
@@ -294,6 +317,16 @@ export default function AppShell({ children, role = 'BUYER', activePath = '/', u
                         <span className="text-[10px] font-medium">{link.label}</span>
                     </button>
                 ))}
+                {/* Logout in bottom nav as a clear, always-visible option */}
+                <button
+                    id="bottom-nav-logout-btn"
+                    onClick={onLogout}
+                    className="flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg
+                        transition-colors duration-150 cursor-pointer text-platinum-dark hover:text-ruby"
+                >
+                    <LogOut className="w-5 h-5" />
+                    <span className="text-[10px] font-medium">Sign Out</span>
+                </button>
             </nav>
         </div>
     )
