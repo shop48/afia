@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
 import AppShell from '../../components/layout/AppShell'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingBag, Package, ChevronRight, Clock, Truck, CheckCircle, AlertTriangle, Filter } from 'lucide-react'
+import { ShoppingBag, Package, ChevronRight, Clock, Truck, CheckCircle, AlertTriangle } from 'lucide-react'
 import { Badge } from '../../components/ui'
-import { useOrders, getProduct, getEscrow, type Order } from '../../hooks/useOrders'
+import { useOrders, getProduct, getEscrow } from '../../hooks/useOrders'
 import { useState } from 'react'
 
 const STATUS_VARIANT: Record<string, string> = {
