@@ -51,12 +51,7 @@ export default function AdminDashboard() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    style={{
-                        margin: 'calc(-1 * clamp(1rem, 3vw, 2.5rem))',
-                        padding: 'clamp(1.5rem, 3vw, 2.5rem)',
-                        minHeight: '100vh',
-                        background: 'linear-gradient(135deg, var(--color-navy-dark) 0%, var(--color-navy) 100%)',
-                    }}
+                    className="-m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen bg-gradient-to-br from-navy-dark to-navy"
                 >
                     {renderContent()}
                 </motion.div>

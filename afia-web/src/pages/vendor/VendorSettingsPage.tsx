@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import AppShell from '../../components/layout/AppShell'
 import BankAccountSetup from '../../components/payments/BankAccountSetup'
 import SmileIDVerification from '../../components/id/SmileIDVerification'
@@ -25,7 +26,8 @@ interface KycStatus {
 }
 
 export default function VendorSettingsPage() {
-    const { session, profile } = useAuth()
+    const { session, profile, signOut } = useAuth()
+    const navigate = useNavigate()
     const [kycStatus, setKycStatus] = useState<KycStatus | null>(null)
     const [loading, setLoading] = useState(true)
     const [showKycModal, setShowKycModal] = useState(false)
@@ -90,7 +92,13 @@ export default function VendorSettingsPage() {
 
     if (loading) {
         return (
-            <AppShell>
+            <AppShell
+                role="VENDOR"
+                activePath="/vendor/settings"
+                userName={profile?.full_name || 'Vendor'}
+                onNavigate={(path) => navigate(path)}
+                onLogout={signOut}
+            >
                 <div className="flex items-center justify-center min-h-[60vh]">
                     <Loader2 className="w-8 h-8 text-gold animate-spin" />
                 </div>
@@ -99,8 +107,14 @@ export default function VendorSettingsPage() {
     }
 
     return (
-        <AppShell>
-            <div style={{ maxWidth: '42rem', margin: '0 auto' }}>
+        <AppShell
+            role="VENDOR"
+            activePath="/vendor/settings"
+            userName={profile?.full_name || 'Vendor'}
+            onNavigate={(path) => navigate(path)}
+            onLogout={signOut}
+        >
+            <div className="max-w-2xl mx-auto">
                 {/* Header */}
                 <div className="mb-6">
                     <div className="flex items-center gap-3 mb-1">

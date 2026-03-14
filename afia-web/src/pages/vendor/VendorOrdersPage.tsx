@@ -62,7 +62,7 @@ export default function VendorOrdersPage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35 }}
-                style={{ maxWidth: '56rem', margin: '0 auto' }}
+                className="max-w-4xl mx-auto"
             >
                 {/* Header */}
                 <div className="mb-6">
