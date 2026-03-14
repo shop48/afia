@@ -12,6 +12,7 @@ import VerifyEmailPage from './pages/auth/VerifyEmailPage'
 
 // ── Dashboard Pages ──
 import BuyerDashboard from './pages/dashboard/BuyerDashboard'
+import BuyerOrdersPage from './pages/dashboard/BuyerOrdersPage'
 import VendorDashboard from './pages/dashboard/VendorDashboard'
 import OrderDetailPage from './pages/dashboard/OrderDetailPage'
 
@@ -77,6 +78,14 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={['BUYER']}>
                   <BuyerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute allowedRoles={['BUYER']}>
+                  <BuyerOrdersPage />
                 </ProtectedRoute>
               }
             />

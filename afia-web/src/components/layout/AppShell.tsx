@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
     LayoutDashboard, ShoppingBag, Package, Shield,
     Menu, X, LogOut, ChevronRight,
-    AlertTriangle, Users, BarChart3, ScrollText,
+    AlertTriangle, Users, BarChart3, ScrollText, Settings,
 } from 'lucide-react'
 import NotificationCenter from '../notifications/NotificationCenter'
 
@@ -58,7 +58,7 @@ interface AppShellProps {
 
 const BUYER_LINKS: SidebarLink[] = [
     { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, path: '/dashboard' },
-    { label: 'My Orders', icon: <ShoppingBag className="w-5 h-5" />, path: '/dashboard' },
+    { label: 'My Orders', icon: <ShoppingBag className="w-5 h-5" />, path: '/orders' },
     { label: 'Browse', icon: <Package className="w-5 h-5" />, path: '/catalog' },
 ]
 
@@ -66,6 +66,7 @@ const VENDOR_LINKS: SidebarLink[] = [
     { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, path: '/vendor' },
     { label: 'Products', icon: <Package className="w-5 h-5" />, path: '/vendor/products' },
     { label: 'Orders', icon: <ShoppingBag className="w-5 h-5" />, path: '/vendor/orders' },
+    { label: 'Settings', icon: <Settings className="w-5 h-5" />, path: '/vendor/settings' },
 ]
 
 const ADMIN_LINKS: SidebarLink[] = [
@@ -201,7 +202,7 @@ export default function AppShell({ children, role = 'BUYER', activePath = '/', u
 
                 {/* ── Main Content Area ── */}
                 <main className="flex-1 min-w-0 overflow-hidden pt-14 lg:pt-0 pb-16 lg:pb-0">
-                    <div style={{ padding: 'clamp(1rem, 3vw, 2.5rem)' }}>
+                    <div className="p-4 sm:p-6 lg:p-8">
                         {children}
                     </div>
                 </main>
