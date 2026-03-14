@@ -43,26 +43,66 @@ export default function CatalogPage() {
 
     const hasFilters = search || category
 
-    // Category icon map — Lucide SVG icons for consistent cross-platform rendering
-    const categoryIcons: Record<string, ReactNode> = {
-        'Electronics': <Monitor className="w-4 h-4" />,
-        'Fashion & Apparel': <Shirt className="w-4 h-4" />,
-        'Beauty & Health': <Sparkles className="w-4 h-4" />,
-        'Home & Garden': <Home className="w-4 h-4" />,
-        'Food & Beverages': <UtensilsCrossed className="w-4 h-4" />,
-        'Art & Crafts': <Palette className="w-4 h-4" />,
-        'Jewelry & Accessories': <Gem className="w-4 h-4" />,
-        'Sports & Outdoors': <Dumbbell className="w-4 h-4" />,
-        'Books & Media': <BookOpen className="w-4 h-4" />,
-        'Other': <Package className="w-4 h-4" />,
+    // Category icon + color map for premium filter chips
+    const categoryMeta: Record<string, { icon: ReactNode; color: string; activeBg: string }> = {
+        'Electronics': {
+            icon: <Monitor className="w-4 h-4" />,
+            color: 'text-indigo-600 bg-indigo-100',
+            activeBg: 'bg-indigo-600',
+        },
+        'Fashion & Apparel': {
+            icon: <Shirt className="w-4 h-4" />,
+            color: 'text-pink-600 bg-pink-100',
+            activeBg: 'bg-pink-600',
+        },
+        'Beauty & Health': {
+            icon: <Sparkles className="w-4 h-4" />,
+            color: 'text-gold-dark bg-gold/15',
+            activeBg: 'bg-gold',
+        },
+        'Home & Garden': {
+            icon: <Home className="w-4 h-4" />,
+            color: 'text-emerald-600 bg-emerald-100',
+            activeBg: 'bg-emerald-600',
+        },
+        'Food & Beverages': {
+            icon: <UtensilsCrossed className="w-4 h-4" />,
+            color: 'text-orange-600 bg-orange-100',
+            activeBg: 'bg-orange-600',
+        },
+        'Art & Crafts': {
+            icon: <Palette className="w-4 h-4" />,
+            color: 'text-violet-600 bg-violet-100',
+            activeBg: 'bg-violet-600',
+        },
+        'Jewelry & Accessories': {
+            icon: <Gem className="w-4 h-4" />,
+            color: 'text-rose-600 bg-rose-100',
+            activeBg: 'bg-rose-600',
+        },
+        'Sports & Outdoors': {
+            icon: <Dumbbell className="w-4 h-4" />,
+            color: 'text-sky-600 bg-sky-100',
+            activeBg: 'bg-sky-600',
+        },
+        'Books & Media': {
+            icon: <BookOpen className="w-4 h-4" />,
+            color: 'text-amber-700 bg-amber-100',
+            activeBg: 'bg-amber-600',
+        },
+        'Other': {
+            icon: <Package className="w-4 h-4" />,
+            color: 'text-navy bg-platinum',
+            activeBg: 'bg-navy',
+        },
     }
 
     // The catalog content (shared between auth'd and guest views)
     const catalogContent = (
         <div className={user ? '' : 'min-h-screen bg-platinum-light'}>
             {/* ══════ HERO HEADER ══════ */}
-            <div className="bg-navy text-white" style={user ? { margin: 'calc(-1 * clamp(1rem, 3vw, 2.5rem))' } : undefined}>
-                <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '3rem clamp(2rem, 5vw, 4rem)' }}>
+            <div className={`bg-navy text-white ${user ? '-m-4 sm:-m-6 lg:-m-8' : ''}`}>
+                <div className="max-w-6xl mx-auto px-4 sm:px-8 py-12">
                     <motion.div
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -122,7 +162,7 @@ export default function CatalogPage() {
                     transition={{ duration: 0.25 }}
                     className="bg-white border-b border-platinum shadow-sm"
                 >
-                    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '1.25rem clamp(2rem, 5vw, 4rem)' }}>
+                    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-5">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-sm font-semibold text-navy">Browse by Category</span>
                             {hasFilters && (
@@ -135,29 +175,43 @@ export default function CatalogPage() {
                                 </button>
                             )}
                         </div>
-                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                            {PRODUCT_CATEGORIES.map(cat => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setCategory(category === cat ? '' : cat)}
-                                    className={`flex items - center gap - 2 px - 4 py - 2.5 rounded - full text - sm font - medium whitespace - nowrap
-transition - all duration - 200 cursor - pointer border shrink - 0
-                                        ${category === cat
-                                            ? 'bg-gold text-navy-dark border-gold shadow-md shadow-gold/20 scale-[1.02]'
-                                            : 'bg-platinum-light/60 text-navy border-platinum hover:bg-platinum hover:border-platinum-dark hover:shadow-sm'
-                                        } `}
-                                >
-                                    <span className="flex items-center justify-center w-5 h-5 opacity-80">{categoryIcons[cat] || <Package className="w-4 h-4" />}</span>
-                                    {cat}
-                                </button>
-                            ))}
+                        <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
+                            {PRODUCT_CATEGORIES.map(cat => {
+                                const meta = categoryMeta[cat] || { icon: <Package className="w-4 h-4" />, color: 'text-navy bg-platinum', activeBg: 'bg-navy' }
+                                const isActive = category === cat
+                                return (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setCategory(category === cat ? '' : cat)}
+                                        className={`
+                                            group flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap
+                                            transition-all duration-200 cursor-pointer border shrink-0
+                                            ${isActive
+                                                ? 'bg-navy text-white border-navy shadow-lg shadow-navy/15'
+                                                : 'bg-white text-navy border-platinum/80 hover:border-navy/20 hover:shadow-md'
+                                            }
+                                        `}
+                                    >
+                                        <span className={`
+                                            flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200
+                                            ${isActive
+                                                ? 'bg-white/20 text-white'
+                                                : `${meta.color} group-hover:scale-110`
+                                            }
+                                        `}>
+                                            {meta.icon}
+                                        </span>
+                                        <span className="text-[13px]">{cat}</span>
+                                    </button>
+                                )
+                            })}
                         </div>
                     </div>
                 </motion.div>
             )}
 
             {/* ══════ PRODUCTS GRID ══════ */}
-            <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '2.5rem clamp(2rem, 5vw, 4rem)' }}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-8 py-10">
                 {/* Result count */}
                 <div className="flex items-center justify-between mb-6">
                     <p className="text-sm text-platinum-dark">
@@ -248,8 +302,7 @@ transition - all duration - 200 cursor - pointer border shrink - 0
         <div className="min-h-screen bg-platinum-light">
             {/* ══════ STICKY GUEST HEADER ══════ */}
             <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-platinum shadow-sm">
-                <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 clamp(1rem, 3vw, 4rem)' }}
-                    className="flex items-center justify-between h-14"
+                <div className="max-w-6xl mx-auto px-4 sm:px-8 flex items-center justify-between h-14"
                 >
                     {/* Logo */}
                     <span className="font-[family-name:var(--font-heading)] text-xl font-bold tracking-tight text-navy">
@@ -282,8 +335,7 @@ transition - all duration - 200 cursor - pointer border shrink - 0
 
             {/* ══════ FOOTER ══════ */}
             <div className="bg-white border-t border-platinum py-4">
-                <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 clamp(2rem, 5vw, 4rem)' }}
-                    className="flex items-center justify-between"
+                <div className="max-w-6xl mx-auto px-4 sm:px-8 flex items-center justify-between"
                 >
                     <p className="text-xs text-platinum-dark">
                         Powered by <span className="font-[family-name:var(--font-heading)] font-bold"><span className="text-gold">N</span>eoa</span> Escrow

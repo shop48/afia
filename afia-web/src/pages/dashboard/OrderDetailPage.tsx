@@ -128,7 +128,7 @@ export default function OrderDetailPage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35 }}
-                style={{ maxWidth: '48rem', margin: '0 auto' }}
+                className="max-w-3xl mx-auto"
             >
                 {/* Back Button */}
                 <button

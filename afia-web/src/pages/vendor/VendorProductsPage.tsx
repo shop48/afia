@@ -128,7 +128,7 @@ export default function VendorProductsPage() {
 
                 {/* Loading State */}
                 {loading && products.length === 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                         {[1, 2, 3].map(i => (
                             <div key={i} className="bg-white rounded-xl border border-platinum p-4">
                                 <Skeleton className="w-full aspect-[4/3] rounded-lg mb-3" />
@@ -163,7 +163,7 @@ export default function VendorProductsPage() {
 
                 {/* Product Grid */}
                 {products.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                         <AnimatePresence>
                             {products.map((product, i) => (
                                 <motion.div
@@ -265,25 +265,26 @@ export default function VendorProductsPage() {
                                     {/* Product Info */}
                                     <div className="p-4">
                                         <div className="flex items-start justify-between gap-2 mb-2">
-                                            <h3 className="font-semibold text-navy text-sm truncate flex-1">
+                                            <h3 className="font-semibold text-navy text-sm truncate flex-1 min-w-0">
                                                 {product.title}
                                             </h3>
                                             {product.category && (
                                                 <Badge variant="default">
-                                                    {product.category}
+                                                    <span className="truncate max-w-[100px] inline-block">{product.category}</span>
                                                 </Badge>
                                             )}
                                         </div>
                                         <p className="text-lg font-bold text-navy">
                                             {formatCurrency(product.base_price, product.currency)}
                                         </p>
-                                        <div className="flex items-center justify-between mt-2">
-                                            <span className="text-xs text-platinum-dark">
+                                        <div className="flex items-center justify-between gap-2 mt-2">
+                                            <span className="text-xs text-platinum-dark shrink-0">
                                                 Stock: <strong className={product.stock_count === 0 ? 'text-ruby' : 'text-navy'}>{product.stock_count}</strong>
                                             </span>
-                                            <div className="flex items-center gap-1 text-xs text-neoa-emerald">
-                                                <ShieldCheck className="w-3.5 h-3.5" />
-                                                Escrow Protected
+                                            <div className="flex items-center gap-1 text-xs text-neoa-emerald shrink-0">
+                                                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                                                <span className="hidden sm:inline">Escrow Protected</span>
+                                                <span className="sm:hidden">Escrow</span>
                                             </div>
                                         </div>
                                     </div>

@@ -62,8 +62,26 @@ export default function NotificationCenter({
 }: NotificationCenterProps) {
     const { notifications, unreadCount, loading, markRead } = useNotifications()
     const [isOpen, setIsOpen] = useState(false)
+    const [panelPos, setPanelPos] = useState<{ top: number; left: number } | null>(null)
     const panelRef = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLButtonElement>(null)
+
+    // ── Calculate panel position relative to bell button ──
+    useEffect(() => {
+        if (isOpen && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect()
+            const panelWidth = 380
+            // Position below the bell, aligned to the left edge of the bell
+            let left = rect.left
+            // If it would overflow the right edge, shift left
+            if (left + panelWidth > window.innerWidth - 16) {
+                left = window.innerWidth - panelWidth - 16
+            }
+            // Don't go off left edge
+            if (left < 16) left = 16
+            setPanelPos({ top: rect.bottom + 8, left })
+        }
+    }, [isOpen])
 
     // ── Click outside to close ──
     const handleClickOutside = useCallback((e: MouseEvent) => {
@@ -118,7 +136,7 @@ export default function NotificationCenter({
     const isLight = variant === 'light'
 
     return (
-        <div className="relative" id="notification-center">
+        <div className="relative" id="notification-center" style={{ zIndex: 60 }}>
             {/* ── Bell Button ── */}
             <button
                 ref={buttonRef}
@@ -160,7 +178,7 @@ export default function NotificationCenter({
 
             {/* ── Dropdown Panel ── */}
             <AnimatePresence>
-                {isOpen && (
+                {isOpen && panelPos && (
                     <motion.div
                         ref={panelRef}
                         initial={{ opacity: 0, y: -8, scale: 0.96 }}
@@ -168,12 +186,12 @@ export default function NotificationCenter({
                         exit={{ opacity: 0, y: -8, scale: 0.96 }}
                         transition={{ type: 'spring', stiffness: 400, damping: 28 }}
                         className="
-              absolute right-0 top-full mt-2
-              w-[380px] max-w-[calc(100vw-2rem)]
+              fixed w-[380px] max-w-[calc(100vw-2rem)]
               bg-white rounded-2xl shadow-2xl
               border border-platinum/50
-              overflow-hidden z-50
+              overflow-hidden
             "
+                        style={{ top: panelPos.top, left: panelPos.left, zIndex: 9999 }}
                         id="notification-panel"
                     >
                         {/* Header */}

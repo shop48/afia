@@ -30,6 +30,40 @@ interface BankAccountSetupProps {
     } | null
 }
 
+// Static fallback list of major Nigerian banks
+// Used when Paystack API is unreachable (e.g. no API key configured)
+const NIGERIAN_BANKS_FALLBACK: Bank[] = [
+    { id: 1, name: 'Access Bank', code: '044', active: true },
+    { id: 2, name: 'Citibank Nigeria', code: '023', active: true },
+    { id: 3, name: 'Ecobank Nigeria', code: '050', active: true },
+    { id: 4, name: 'Fidelity Bank', code: '070', active: true },
+    { id: 5, name: 'First Bank of Nigeria', code: '011', active: true },
+    { id: 6, name: 'First City Monument Bank', code: '214', active: true },
+    { id: 7, name: 'Globus Bank', code: '00103', active: true },
+    { id: 8, name: 'Guaranty Trust Bank', code: '058', active: true },
+    { id: 9, name: 'Heritage Bank', code: '030', active: true },
+    { id: 10, name: 'Jaiz Bank', code: '301', active: true },
+    { id: 11, name: 'Keystone Bank', code: '082', active: true },
+    { id: 12, name: 'Kuda Bank', code: '50211', active: true },
+    { id: 13, name: 'Moniepoint MFB', code: '50515', active: true },
+    { id: 14, name: 'OPay', code: '999992', active: true },
+    { id: 15, name: 'PalmPay', code: '999991', active: true },
+    { id: 16, name: 'Parallex Bank', code: '526', active: true },
+    { id: 17, name: 'Polaris Bank', code: '076', active: true },
+    { id: 18, name: 'Providus Bank', code: '101', active: true },
+    { id: 19, name: 'Stanbic IBTC Bank', code: '221', active: true },
+    { id: 20, name: 'Standard Chartered Bank', code: '068', active: true },
+    { id: 21, name: 'Sterling Bank', code: '232', active: true },
+    { id: 22, name: 'SunTrust Bank', code: '100', active: true },
+    { id: 23, name: 'Titan Trust Bank', code: '102', active: true },
+    { id: 24, name: 'Union Bank of Nigeria', code: '032', active: true },
+    { id: 25, name: 'United Bank for Africa', code: '033', active: true },
+    { id: 26, name: 'Unity Bank', code: '215', active: true },
+    { id: 27, name: 'VFD Microfinance Bank', code: '566', active: true },
+    { id: 28, name: 'Wema Bank', code: '035', active: true },
+    { id: 29, name: 'Zenith Bank', code: '057', active: true },
+]
+
 export default function BankAccountSetup({ onComplete, currentAccount }: BankAccountSetupProps) {
     const { session } = useAuth()
     const [banks, setBanks] = useState<Bank[]>([])
@@ -54,9 +88,16 @@ export default function BankAccountSetup({ onComplete, currentAccount }: BankAcc
                 })
                 if (!response.ok) throw new Error('Failed to fetch banks')
                 const data = await response.json() as { banks: Bank[] }
-                setBanks((data.banks || []).filter(b => b.active))
+                const liveBanks = (data.banks || []).filter(b => b.active)
+                if (liveBanks.length > 0) {
+                    setBanks(liveBanks)
+                } else {
+                    throw new Error('Empty bank list')
+                }
             } catch {
-                setError('Could not load bank list. Please try again.')
+                // Fallback: use a static list of major Nigerian banks
+                // so vendors can still set up their account
+                setBanks(NIGERIAN_BANKS_FALLBACK)
             } finally {
                 setBanksLoading(false)
             }

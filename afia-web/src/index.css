@@ -18,6 +18,8 @@
     --color-gold-dark: #A8873D;
     --color-neoa-emerald: #059669;
     --color-neoa-emerald-light: #10B981;
+    --color-afia-emerald: #059669;
+    --color-afia-emerald-light: #10B981;
     --color-ruby: #DC2626;
     --color-ruby-light: #EF4444;
 
@@ -31,40 +33,68 @@
 }
 
 /* ============================================
-   GLOBAL STYLES
+   GLOBAL STYLES — inside @layer base so
+   Tailwind utilities can override them
    ============================================ */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+@layer base {
+    *,
+    ::before,
+    ::after {
+        box-sizing: border-box;
+    }
 
-html {
-    scroll-behavior: smooth;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
+    html {
+        scroll-behavior: smooth;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
 
-body {
-    font-family: var(--font-body);
-    color: var(--color-navy);
-    background-color: #FAFAFA;
-    line-height: 1.6;
-}
+    body {
+        font-family: var(--font-body);
+        color: var(--color-navy);
+        background-color: #FAFAFA;
+        line-height: 1.6;
+    }
 
-h1,
-h2,
-h3,
-h4 {
-    font-family: var(--font-heading);
-    font-weight: 600;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
+    h1,
+    h2,
+    h3,
+    h4 {
+        font-family: var(--font-heading);
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+    }
+
+    /* Scrollbar (Premium thin style) */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--color-platinum-dark);
+        border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--color-gold);
+    }
+
+    /* Focus Styles (Accessibility) */
+    :focus-visible {
+        outline: 2px solid var(--color-gold);
+        outline-offset: 2px;
+    }
 }
 
 /* ============================================
-   SKELETON LOADER (shimmer animation)
+   ANIMATIONS — outside layers (keyframes)
    ============================================ */
 
 @keyframes shimmer {
@@ -77,56 +107,27 @@ h4 {
     }
 }
 
-.skeleton {
-    background: linear-gradient(90deg,
-            var(--color-platinum-light) 25%,
-            var(--color-platinum) 50%,
-            var(--color-platinum-light) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
-    border-radius: 0.5rem;
-}
-
 /* ============================================
-   SCROLLBAR (Premium thin style)
+   UTILITY CLASSES — in @layer utilities
    ============================================ */
 
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
+@layer utilities {
+    .skeleton {
+        background: linear-gradient(90deg,
+                var(--color-platinum-light) 25%,
+                var(--color-platinum) 50%,
+                var(--color-platinum-light) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s ease-in-out infinite;
+        border-radius: 0.5rem;
+    }
 
-::-webkit-scrollbar-track {
-    background: transparent;
-}
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 
-::-webkit-scrollbar-thumb {
-    background: var(--color-platinum-dark);
-    border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--color-gold);
-}
-
-/* ============================================
-   FOCUS STYLES (Accessibility)
-   ============================================ */
-
-:focus-visible {
-    outline: 2px solid var(--color-gold);
-    outline-offset: 2px;
-}
-
-/* ============================================
-   SCROLLBAR HIDE UTILITY
-   ============================================ */
-
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
 }
