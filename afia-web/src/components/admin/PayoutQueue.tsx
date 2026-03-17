@@ -63,7 +63,6 @@ export default function PayoutQueue() {
     const [batchResults, setBatchResults] = useState<BatchResult[] | null>(null)
     const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
     const [expandedRow, setExpandedRow] = useState<string | null>(null)
-    const [totalPayout, setTotalPayout] = useState(0)
     // Manual international payout state
     const [markPaidItem, setMarkPaidItem] = useState<PayoutItem | null>(null)
     const [wiseReference, setWiseReference] = useState('')
@@ -77,7 +76,6 @@ export default function PayoutQueue() {
         try {
             const data = await apiClient<{ queue: PayoutItem[]; total_payout: number }>('/api/admin/payout/queue')
             setQueue(data.queue || [])
-            setTotalPayout(data.total_payout || 0)
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to load payout queue')
         } finally {
@@ -104,9 +102,7 @@ export default function PayoutQueue() {
         }
     }
 
-    const selectedTotal = queue
-        .filter(item => selectedIds.has(item.order_id))
-        .reduce((sum, item) => sum + item.net_payout, 0)
+
 
     const selectedDrift = queue
         .filter(item => selectedIds.has(item.order_id) && item.margin_status === 'DRIFT_WARNING')
