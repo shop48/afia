@@ -98,21 +98,28 @@ function timingSafeEqual(a: string, b: string): boolean {
  */
 export async function initializeTransaction(params: {
     email: string
-    amount: number // in kobo (NGN smallest unit)
+    amount: number // in subunit (kobo for NGN, cents for USD)
     reference: string
     callbackUrl: string
     secretKey: string
+    currency?: string // ISO 4217: 'NGN', 'USD', 'GHS', 'ZAR', 'KES'
     metadata?: Record<string, unknown>
 }): Promise<{ authorization_url: string; reference: string; access_code: string }> {
+    const body: Record<string, unknown> = {
+        email: params.email,
+        amount: params.amount,
+        reference: params.reference,
+        callback_url: params.callbackUrl,
+        metadata: params.metadata || {},
+    }
+    // Pass currency to Paystack — enables multi-currency collection
+    // When currency is 'USD', Paystack charges in USD and settles to merchant's USD dom account
+    if (params.currency) {
+        body.currency = params.currency
+    }
     const response = await paystackFetch('/transaction/initialize', params.secretKey, {
         method: 'POST',
-        body: JSON.stringify({
-            email: params.email,
-            amount: params.amount,
-            reference: params.reference,
-            callback_url: params.callbackUrl,
-            metadata: params.metadata || {},
-        }),
+        body: JSON.stringify(body),
     })
 
     if (!response.ok) {

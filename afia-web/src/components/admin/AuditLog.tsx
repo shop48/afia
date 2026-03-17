@@ -7,7 +7,7 @@ import {
 import { apiClient } from '../../lib/api'
 
 // ═══════════════════════════════════════════════
-// MODULE 7.4: ACTIVITY FEED / AUDIT LOG
+// MODULE 7.4: ACTIVITY FEED / AUDIT LOG (LIGHT THEME)
 // Immutable admin action trail
 // ═══════════════════════════════════════════════
 
@@ -33,44 +33,50 @@ interface Pagination {
     total_pages: number
 }
 
-// Action → config map for visual styling
-const ACTION_CONFIG: Record<string, { icon: typeof Shield; color: string; bg: string; label: string }> = {
+// Action → config map for visual styling (light theme)
+const ACTION_CONFIG: Record<string, { icon: typeof Shield; color: string; textColor: string; bg: string; label: string }> = {
     BATCH_PAYOUT_EXECUTED: {
         icon: DollarSign,
-        color: 'text-emerald-400',
-        bg: 'bg-emerald-500/10 border-emerald-500/20',
+        color: 'text-emerald-600',
+        textColor: 'text-emerald-700',
+        bg: 'bg-emerald-50 border-emerald-200',
         label: 'Batch Payout',
     },
     VENDOR_FLAGGED: {
         icon: Flag,
-        color: 'text-ruby',
-        bg: 'bg-ruby/10 border-ruby/20',
+        color: 'text-red-600',
+        textColor: 'text-red-700',
+        bg: 'bg-red-50 border-red-200',
         label: 'Vendor Flagged',
     },
     VENDOR_UNFLAGGED: {
         icon: Flag,
-        color: 'text-emerald-400',
-        bg: 'bg-emerald-500/10 border-emerald-500/20',
+        color: 'text-emerald-600',
+        textColor: 'text-emerald-700',
+        bg: 'bg-emerald-50 border-emerald-200',
         label: 'Vendor Unflagged',
     },
     TREASURY_MODE_CHANGED: {
         icon: Users,
-        color: 'text-amber-400',
-        bg: 'bg-amber-500/10 border-amber-500/20',
+        color: 'text-amber-600',
+        textColor: 'text-amber-700',
+        bg: 'bg-amber-50 border-amber-200',
         label: 'Treasury Toggle',
     },
     DISPUTE_RESOLVED: {
         icon: AlertTriangle,
-        color: 'text-blue-400',
-        bg: 'bg-blue-500/10 border-blue-500/20',
+        color: 'text-blue-600',
+        textColor: 'text-blue-700',
+        bg: 'bg-blue-50 border-blue-200',
         label: 'Dispute Resolved',
     },
 }
 
 const DEFAULT_CONFIG = {
     icon: Shield,
-    color: 'text-platinum',
-    bg: 'bg-white/5 border-white/10',
+    color: 'text-platinum-dark',
+    textColor: 'text-navy',
+    bg: 'bg-platinum-light border-platinum',
     label: 'Admin Action',
 }
 
@@ -144,7 +150,7 @@ export default function AuditLog() {
         return (
             <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map(i => (
-                    <div key={i} className="animate-pulse bg-white/5 rounded-xl h-16 border border-white/10" />
+                    <div key={i} className="animate-pulse bg-platinum-light rounded-xl h-16 border border-platinum" />
                 ))}
             </div>
         )
@@ -154,7 +160,7 @@ export default function AuditLog() {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h2 className="text-2xl font-bold text-gold font-[family-name:var(--font-heading)]">
+                <h2 className="text-2xl font-bold text-navy font-[family-name:var(--font-heading)]">
                     Audit Log
                 </h2>
                 <p className="text-sm text-platinum-dark mt-1">
@@ -163,7 +169,7 @@ export default function AuditLog() {
             </div>
 
             {error && (
-                <div className="bg-ruby/10 border border-ruby/30 text-ruby rounded-xl p-4 text-sm">
+                <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-4 text-sm">
                     {error}
                     <button onClick={() => fetchLogs()} className="ml-2 underline cursor-pointer">Retry</button>
                 </div>
@@ -179,7 +185,7 @@ export default function AuditLog() {
                     {/* Timeline */}
                     <div className="relative">
                         {/* Vertical line */}
-                        <div className="absolute left-6 top-6 bottom-0 w-px bg-white/10" />
+                        <div className="absolute left-6 top-6 bottom-0 w-px bg-platinum" />
 
                         <div className="space-y-1">
                             {logs.map((entry, i) => {
@@ -196,13 +202,13 @@ export default function AuditLog() {
                                     >
                                         <div
                                             className={`ml-12 border rounded-xl p-4 transition-all cursor-pointer
-                        hover:bg-white/[0.02] ${config.bg} ${expandedId === entry.id ? 'ring-1 ring-white/20' : ''
+                        hover:shadow-sm ${config.bg} ${expandedId === entry.id ? 'ring-1 ring-platinum-dark/20' : ''
                                                 }`}
                                             onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
                                         >
                                             {/* Timeline dot */}
-                                            <div className={`absolute left-4 top-5 w-5 h-5 rounded-full border-2 border-navy-dark
-                        flex items-center justify-center ${config.bg.split(' ')[0]}`}>
+                                            <div className={`absolute left-4 top-5 w-5 h-5 rounded-full border-2 border-white
+                        flex items-center justify-center shadow-sm ${config.bg.split(' ')[0]}`}>
                                                 <Icon className={`w-3 h-3 ${config.color}`} />
                                             </div>
 
@@ -217,7 +223,7 @@ export default function AuditLog() {
                                                             {formatTime(entry.created_at)}
                                                         </span>
                                                     </div>
-                                                    <p className="text-sm text-platinum">{getActionDescription(entry)}</p>
+                                                    <p className="text-sm text-navy">{getActionDescription(entry)}</p>
                                                     <p className="text-xs text-platinum-dark mt-1">
                                                         by {entry.admin?.full_name || entry.admin?.email || 'System'}
                                                     </p>
@@ -231,30 +237,30 @@ export default function AuditLog() {
                                                 <motion.div
                                                     initial={{ height: 0, opacity: 0 }}
                                                     animate={{ height: 'auto', opacity: 1 }}
-                                                    className="mt-3 pt-3 border-t border-white/10"
+                                                    className="mt-3 pt-3 border-t border-platinum"
                                                 >
                                                     <div className="grid grid-cols-2 gap-3 text-xs">
                                                         <div>
                                                             <p className="text-platinum-dark">Timestamp</p>
-                                                            <p className="text-platinum font-mono">{formatFullDate(entry.created_at)}</p>
+                                                            <p className="text-navy font-mono">{formatFullDate(entry.created_at)}</p>
                                                         </div>
                                                         <div>
                                                             <p className="text-platinum-dark">Entry ID</p>
-                                                            <p className="text-platinum font-mono">{entry.id.slice(0, 16)}...</p>
+                                                            <p className="text-navy font-mono">{entry.id.slice(0, 16)}...</p>
                                                         </div>
                                                         <div>
                                                             <p className="text-platinum-dark">Target Type</p>
-                                                            <p className="text-platinum">{entry.target_type}</p>
+                                                            <p className="text-navy">{entry.target_type}</p>
                                                         </div>
                                                         <div>
                                                             <p className="text-platinum-dark">Target ID</p>
-                                                            <p className="text-platinum font-mono">{entry.target_id || '—'}</p>
+                                                            <p className="text-navy font-mono">{entry.target_id || '—'}</p>
                                                         </div>
                                                     </div>
                                                     {entry.metadata && Object.keys(entry.metadata).length > 0 && (
                                                         <div className="mt-3">
                                                             <p className="text-platinum-dark text-xs mb-1">Metadata</p>
-                                                            <pre className="text-xs text-platinum bg-navy-dark/50 rounded-lg p-3 overflow-auto max-h-32 font-mono">
+                                                            <pre className="text-xs text-navy bg-platinum-light rounded-lg p-3 overflow-auto max-h-32 font-mono">
                                                                 {JSON.stringify(entry.metadata, null, 2)}
                                                             </pre>
                                                         </div>
@@ -274,8 +280,8 @@ export default function AuditLog() {
                             <button
                                 onClick={() => fetchLogs(pagination.page + 1, true)}
                                 disabled={loadingMore}
-                                className="px-6 py-3 bg-navy-light border border-white/10 text-platinum rounded-xl
-                  hover:bg-white/5 transition-colors text-sm font-medium disabled:opacity-50 cursor-pointer"
+                                className="px-6 py-3 bg-white border border-platinum text-navy rounded-xl
+                  hover:bg-platinum-light transition-colors text-sm font-medium disabled:opacity-50 cursor-pointer"
                             >
                                 {loadingMore ? 'Loading...' : `Load More (${pagination.total - logs.length} remaining)`}
                             </button>

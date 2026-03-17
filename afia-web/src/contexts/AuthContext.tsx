@@ -17,6 +17,9 @@ export interface Profile {
     kyc_level: KycStatus
     settlement_currency: string
     wise_recipient_id: string | null
+    trust_score: number | null
+    kyc_method: string | null
+    kyc_country: string | null
     created_at: string
 }
 

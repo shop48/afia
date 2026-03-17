@@ -371,6 +371,22 @@ export class OrderDO extends DurableObject {
                 // Don't throw — order status already updated, escrow can be fixed manually
             }
 
+            // Recalculate buyer trust score (non-blocking)
+            try {
+                const { data: completedOrder } = await supabase
+                    .from("orders")
+                    .select("buyer_id")
+                    .eq("id", timer.orderId)
+                    .maybeSingle();
+
+                if (completedOrder?.buyer_id) {
+                    await supabase.rpc("recalculate_trust_score", { buyer_uuid: completedOrder.buyer_id });
+                    console.log(`📊 Trust score recalculated for buyer ${completedOrder.buyer_id}`);
+                }
+            } catch (trustErr) {
+                console.error(`Failed to recalculate trust score for order ${timer.orderId}:`, trustErr);
+            }
+
             console.log(`✅ Order ${timer.orderId} auto-completed, escrow → RELEASE_PENDING`);
         }
 

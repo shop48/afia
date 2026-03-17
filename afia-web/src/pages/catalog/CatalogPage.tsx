@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useProducts, PRODUCT_CATEGORIES, type Product } from '../../hooks/useProducts'
-import { formatCurrency, getConvertedDisplay } from '../../lib/currency'
+import { formatCurrency } from '../../lib/currency'
 import { Skeleton } from '../../components/ui'
 import { useAuth } from '../../contexts/AuthContext'
 import AppShell from '../../components/layout/AppShell'
@@ -273,7 +273,7 @@ export default function CatalogPage() {
                                 key={product.id}
                                 product={product}
                                 index={i}
-                                onClick={() => navigate(`/ catalog / ${product.id} `)}
+                                onClick={() => navigate(`/catalog/${product.id}`)}
                             />
                         ))}
                     </div>
@@ -414,16 +414,6 @@ function ProductCard({ product, index, onClick }: { product: Product; index: num
                 <p className="text-base font-bold text-navy">
                     {formatCurrency(product.base_price, product.currency)}
                 </p>
-                {product.currency !== 'USD' && (
-                    <p className="text-[11px] text-platinum-dark mt-0.5">
-                        {getConvertedDisplay(product.base_price, product.currency, 'USD')}
-                    </p>
-                )}
-                {product.currency === 'USD' && (
-                    <p className="text-[11px] text-platinum-dark mt-0.5">
-                        {getConvertedDisplay(product.base_price, product.currency, 'NGN')}
-                    </p>
-                )}
                 {product.vendor?.full_name && (
                     <p className="text-[11px] text-platinum-dark mt-1.5 truncate">
                         by {product.vendor.full_name}

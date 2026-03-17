@@ -7,6 +7,7 @@ import { Package, Truck, CheckCircle, Clock, AlertTriangle } from 'lucide-react'
 import { Badge } from '../../components/ui'
 import { useOrders, getProduct, getEscrow, getBuyer, type Order } from '../../hooks/useOrders'
 import FulfillmentModal from '../../components/logistics/FulfillmentModal'
+import { formatCurrency } from '../../lib/currency'
 
 const STATUS_TABS = [
     { key: '', label: 'All Orders' },
@@ -177,8 +178,10 @@ export default function VendorOrdersPage() {
                                 {/* Amount + Action */}
                                 <div className="text-right flex-shrink-0">
                                     <div className="font-bold text-navy text-base">
-                                        {order.currency}{' '}
-                                        {(escrow as any)?.net_payout?.toLocaleString() || order.total_amount.toLocaleString()}
+                                        {formatCurrency(
+                                            (escrow as any)?.net_payout || order.total_amount,
+                                            order.currency || 'NGN'
+                                        )}
                                     </div>
                                     {order.status === 'PAID' && (
                                         <button

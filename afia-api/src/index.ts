@@ -14,14 +14,15 @@ import {
   type BatchPayoutItem
 } from './utils/wise'
 import {
-  submitEnhancedKyc, submitBiometricKyc, parseSmileIdCallback,
-  verifySmileIdWebhookSignature, getJobStatus,
+  submitEnhancedKyc, submitBiometricKyc, submitDocumentVerification,
+  parseSmileIdCallback, verifySmileIdWebhookSignature, getJobStatus,
   type SmileIdCallbackPayload
 } from './utils/smileid'
 // Module 10: Security Hardening
 import { checkRateLimit, getClientIp, getRateLimitForPath } from './utils/rate-limiter'
 import { isValidUUID, sanitizeString, sanitizeNumber, isValidUrl, isValidPhone, parseJsonBody } from './utils/validators'
 import { checkKycVelocity, notifyVelocityAlert } from './utils/kyc-velocity'
+import { recalculateTrustScore, checkBuyerTrustGate } from './utils/trust-score'
 
 // ══════════════════════════════════════════════
 // TYPE DEFINITIONS
@@ -306,6 +307,12 @@ app.post('/api/checkout/initialize', async (c) => {
 
   const supabase = c.get('supabase')
 
+  // ── BUYER TRUST GATE: Block flagged buyers ──
+  const trustBlock = await checkBuyerTrustGate(supabase, user.id)
+  if (trustBlock) {
+    return c.json({ error: trustBlock }, 403)
+  }
+
   // 1. Fetch product details
   const { data: product, error: productError } = await supabase
     .from('products')
@@ -329,46 +336,42 @@ app.post('/api/checkout/initialize', async (c) => {
     return c.json({ error: `Insufficient stock. Only ${product.stock_count} available.` }, 409)
   }
 
-  // 4. Calculate totals
+  // 4. Calculate totals — charge in the product's native currency (no FX conversion)
   const unitPrice = Number(product.base_price)
   if (unitPrice <= 0 || !Number.isFinite(unitPrice)) {
     return c.json({ error: 'Invalid product price' }, 500)
   }
 
   const subtotal = unitPrice * qty
+  const productCurrency = product.currency || 'NGN'
 
-  // Snapshot FX rate at checkout for Margin Guard
-  // Module 8: Use live Wise API rate (with 5-min cache), fallback to static
-  const fxRate = await getLiveFxRate(product.currency || 'USD', 'NGN', c.env.WISE_API_TOKEN)
+  // Snapshot FX rate for audit trail only (NOT used for pricing)
+  const fxRateSnapshot = productCurrency !== 'NGN'
+    ? await getLiveFxRate(productCurrency, 'NGN', c.env.WISE_API_TOKEN)
+    : null
 
-  // Convert to NGN for Paystack (Paystack only accepts NGN amounts in kobo)
-  let amountNGN: number
-  if (product.currency === 'NGN') {
-    amountNGN = subtotal
-  } else {
-    if (!fxRate) {
-      return c.json({ error: `Unsupported currency: ${product.currency}` }, 400)
-    }
-    amountNGN = subtotal * fxRate * 1.03 // Apply 3% volatility buffer
-  }
+  // Amount in subunits: kobo (NGN) or cents (USD/GHS/etc.)
+  // Paystack requires amount × 100 for all currencies
+  const amountSubunit = Math.round(subtotal * 100)
 
-  const amountKobo = Math.round(amountNGN * 100)
-
-  // 5. Enforce Paystack minimum
-  if (amountKobo < MIN_AMOUNT_KOBO) {
-    return c.json({ error: `Minimum payment is ₦100. Current total: ₦${(amountKobo / 100).toFixed(2)}` }, 400)
+  // 5. Enforce minimum — check against currency-appropriate minimum
+  const minAmount = productCurrency === 'NGN' ? MIN_AMOUNT_KOBO : 100 // $1 USD min = 100 cents
+  if (amountSubunit < minAmount) {
+    const minDisplay = productCurrency === 'NGN' ? '₦100' : '$1'
+    return c.json({ error: `Minimum payment is ${minDisplay}. Current total: ${productCurrency} ${(amountSubunit / 100).toFixed(2)}` }, 400)
   }
 
   // 6. Generate reference and idempotency key
   const reference = generateReference()
   const idempotencyKey = generateIdempotencyKey()
 
-  // 7. Initialize Paystack transaction
+  // 7. Initialize Paystack transaction in the product's currency
   try {
     const paystackData = await initializeTransaction({
       email: user.email,
-      amount: amountKobo,
+      amount: amountSubunit,
       reference,
+      currency: productCurrency,
       callbackUrl: `${c.env.FRONTEND_URL || 'http://localhost:5173'}/checkout/callback`,
       secretKey: c.env.PAYSTACK_SECRET_KEY,
       metadata: {
@@ -377,8 +380,8 @@ app.post('/api/checkout/initialize', async (c) => {
         vendor_id: vendor?.id,
         quantity: qty,
         unit_price: unitPrice,
-        currency: product.currency,
-        fx_rate: fxRate,
+        currency: productCurrency,
+        fx_rate_snapshot: fxRateSnapshot,
         idempotency_key: idempotencyKey,
       },
     })
@@ -387,15 +390,16 @@ app.post('/api/checkout/initialize', async (c) => {
       authorization_url: paystackData.authorization_url,
       access_code: paystackData.access_code,
       reference: paystackData.reference,
-      amount_ngn: Math.round(amountNGN * 100) / 100,
-      amount_kobo: amountKobo,
-      fx_rate: fxRate,
+      amount: subtotal,
+      amount_subunit: amountSubunit,
+      currency: productCurrency,
+      fx_rate_snapshot: fxRateSnapshot,
       idempotency_key: idempotencyKey,
       product: {
         id: product.id,
         title: product.title,
         base_price: unitPrice,
-        currency: product.currency,
+        currency: productCurrency,
         vendor_name: vendor?.full_name || null,
       },
     })
@@ -489,7 +493,7 @@ app.post('/api/webhooks/paystack', async (c) => {
   }
 
   // 7. Create Order
-  const grossAmount = data.amount / 100 // Convert kobo to Naira
+  const grossAmount = data.amount / 100 // Convert subunit to base unit (kobo→NGN or cents→USD)
   const { feeAmount, netPayout } = calculateFees(grossAmount)
 
   const { data: order, error: orderError } = await supabase
@@ -503,7 +507,7 @@ app.post('/api/webhooks/paystack', async (c) => {
       quantity: qty,
       total_amount: grossAmount,
       currency: data.currency || 'NGN',
-      fx_rate_at_checkout: meta.fx_rate ?? null,
+      fx_rate_at_checkout: meta.fx_rate_snapshot ?? meta.fx_rate ?? null,
       idempotency_key: meta.idempotency_key ?? null,
     })
     .select('id')
@@ -586,12 +590,17 @@ app.post('/api/webhooks/paystack', async (c) => {
   // ── MODULE 10: KYC Velocity Check ──
   // Flags vendors who exceed $500 in sales within their first 48 hours
   try {
-    const fxRateForVelocity = meta.fx_rate ?? getCurrentFxRate('USD', 'NGN') ?? 1580
+    // For multi-currency: if the order is already in USD, use rate=1
+    // Otherwise use snapshot rate or fallback
+    const orderCurrency = (meta.currency || data.currency || 'NGN') as string
+    const fxRateForVelocity = orderCurrency === 'USD'
+      ? 1 // Already in USD, no conversion needed
+      : (meta.fx_rate_snapshot ?? meta.fx_rate ?? getCurrentFxRate('USD', 'NGN') ?? 1580)
     const velocityResult = await checkKycVelocity(
       supabase,
       meta.vendor_id,
       grossAmount,
-      fxRateForVelocity
+      orderCurrency === 'USD' ? 1 : fxRateForVelocity
     )
 
     if (velocityResult.flagged) {
@@ -1007,6 +1016,80 @@ app.post('/api/vendor/bank-account', async (c) => {
 })
 
 // ══════════════════════════════════════════════
+// MODULE 8: INTERNATIONAL BANK ACCOUNT SETUP
+// POST /api/vendor/bank-account/international
+// International vendors — IBAN/SWIFT for Wise payouts
+// ══════════════════════════════════════════════
+
+app.post('/api/vendor/bank-account/international', async (c) => {
+  const user = c.get('user')
+  const supabase = c.get('supabase')
+
+  let body: {
+    accountHolderName?: string
+    accountNumber?: string // IBAN or local account number
+    swiftBic?: string
+    currency?: string
+    country?: string
+  }
+  try {
+    body = await c.req.json()
+  } catch {
+    return c.json({ error: 'Invalid JSON body' }, 400)
+  }
+
+  const { accountHolderName, accountNumber, swiftBic, currency, country } = body
+
+  // Validate required fields
+  if (!accountHolderName || accountHolderName.length < 2 || accountHolderName.length > 100) {
+    return c.json({ error: 'Account holder name is required (2-100 characters)' }, 400)
+  }
+  if (!accountNumber || accountNumber.length < 5 || accountNumber.length > 34) {
+    return c.json({ error: 'Account number or IBAN is required' }, 400)
+  }
+  if (!currency || !['USD', 'EUR', 'GBP', 'CAD', 'AUD'].includes(currency.toUpperCase())) {
+    return c.json({ error: 'Currency must be one of: USD, EUR, GBP, CAD, AUD' }, 400)
+  }
+
+  const safeName = sanitizeString(accountHolderName, 100)
+  const safeAccountNumber = sanitizeString(accountNumber.replace(/\s/g, ''), 34)
+  const safeSwift = swiftBic ? sanitizeString(swiftBic.replace(/\s/g, '').toUpperCase(), 11) : null
+  const safeCountry = country ? sanitizeString(country.toUpperCase(), 2) : null
+  const safeCurrency = currency.toUpperCase()
+
+  // SWIFT/BIC validation (8 or 11 characters)
+  if (safeSwift && !/^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(safeSwift)) {
+    return c.json({ error: 'Invalid SWIFT/BIC code format' }, 400)
+  }
+
+  // Save to profile — store international bank details alongside settlement currency
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({
+      bank_account_number: safeAccountNumber,
+      bank_code: safeSwift || 'INTERNATIONAL',
+      bank_name: `International (${safeCurrency})`,
+      bank_account_name: safeName,
+      settlement_currency: safeCurrency,
+    })
+    .eq('id', user.id)
+
+  if (updateError) {
+    return c.json({ error: 'Failed to save international bank details' }, 500)
+  }
+
+  console.log(`🌍 International bank saved for vendor ${user.id}: ${safeCurrency} / ${safeCountry}`)
+
+  return c.json({
+    message: 'International bank details saved',
+    account_name: safeName,
+    currency: safeCurrency,
+    country: safeCountry,
+    payout_method: 'Wise (TransferWise)',
+  })
+})
+
+// ══════════════════════════════════════════════
 // MODULE 8: KYC SUBMISSION (SmileID)
 // POST /api/kyc/submit
 // Vendor only — submit BVN for enhanced KYC
@@ -1024,13 +1107,18 @@ app.post('/api/kyc/submit', async (c) => {
   }
 
   let body: {
-    idType?: string
-    idNumber?: string
+    // Common fields
+    country?: string
     firstName?: string
     lastName?: string
-    dob?: string
-    country?: string
     selfieImage?: string
+    // African Enhanced KYC fields
+    idType?: string
+    idNumber?: string
+    dob?: string
+    // International Document Verification fields
+    idDocumentFrontImage?: string
+    idDocumentBackImage?: string
   }
   try {
     body = await c.req.json()
@@ -1038,13 +1126,45 @@ app.post('/api/kyc/submit', async (c) => {
     return c.json({ error: 'Invalid JSON body' }, 400)
   }
 
-  const { idType, idNumber, firstName, lastName, dob, country, selfieImage } = body
+  const { idType, idNumber, firstName, lastName, dob, country, selfieImage, idDocumentFrontImage, idDocumentBackImage } = body
 
-  if (!idType || !['BVN', 'NIN', 'VOTER_ID', 'DRIVERS_LICENSE', 'PASSPORT'].includes(idType)) {
-    return c.json({ error: 'Valid ID type is required (BVN, NIN, VOTER_ID, DRIVERS_LICENSE, or PASSPORT)' }, 400)
+  // SmileID Enhanced KYC country → ID type matrix (African countries)
+  // Source: https://docs.usesmileid.com/supported-id-types/for-individuals-kyc/backed-by-id-authority
+  const ENHANCED_KYC_TYPES: Record<string, string[]> = {
+    NG: ['BVN', 'NIN_V2', 'NIN_SLIP', 'V_NIN', 'VOTER_ID', 'PHONE_NUMBER', 'BANK_ACCOUNT'],
+    GH: ['GHANA_CARD', 'GHANA_CARD_NO_PHOTO', 'VOTER_ID', 'PASSPORT'],
+    KE: ['NATIONAL_ID', 'NATIONAL_ID_NO_PHOTO', 'PASSPORT', 'ALIEN_CARD', 'KRA_PIN', 'TAX_INFORMATION'],
+    ZA: ['NATIONAL_ID', 'NATIONAL_ID_NO_PHOTO'],
+    UG: ['NATIONAL_ID_NO_PHOTO'],
+    CI: ['NATIONAL_ID_NO_PHOTO', 'RESIDENT_ID_NO_PHOTO'],
+    ZM: ['BANK_ACCOUNT', 'TPIN'],
   }
-  if (!idNumber || typeof idNumber !== 'string' || idNumber.length < 5) {
-    return c.json({ error: 'Valid ID number is required' }, 400)
+
+  // Validate country is provided
+  if (!country || typeof country !== 'string' || !/^[A-Z]{2}$/.test(country)) {
+    return c.json({ error: 'A valid 2-letter country code is required (e.g., NG, GH, US, GB)' }, 400)
+  }
+
+  // Determine path: African Enhanced KYC vs International Document Verification
+  const isEnhancedKycCountry = !!ENHANCED_KYC_TYPES[country]
+
+  if (isEnhancedKycCountry) {
+    // ── AFRICAN PATH: Validate ID type + number ──
+    const allowedTypes = ENHANCED_KYC_TYPES[country]
+    if (!idType || !allowedTypes.includes(idType)) {
+      return c.json({ error: `Invalid ID type for ${country}. Valid: ${allowedTypes.join(', ')}` }, 400)
+    }
+    if (!idNumber || typeof idNumber !== 'string' || idNumber.length < 5) {
+      return c.json({ error: 'Valid ID number is required' }, 400)
+    }
+  } else {
+    // ── INTERNATIONAL PATH: Require document photo + selfie ──
+    if (!idDocumentFrontImage) {
+      return c.json({ error: 'A photo of your ID document (front) is required for international verification' }, 400)
+    }
+    if (!selfieImage) {
+      return c.json({ error: 'A selfie photo is required for international verification' }, 400)
+    }
   }
 
   // Check existing KYC status
@@ -1063,44 +1183,65 @@ app.post('/api/kyc/submit', async (c) => {
   const callbackUrl = `${requestUrl.origin}/api/webhooks/smileid`
 
   try {
-    // Determine which KYC type to use
     let result
-    if (selfieImage) {
-      // Biometric KYC (BVN + selfie)
-      result = await submitBiometricKyc({
-        partnerId,
-        userId: user.id,
-        jobType: 'biometric_kyc',
-        country: country || 'NG',
-        idType,
-        idNumber,
-        firstName,
-        lastName,
-        dob,
-        selfieImage,
-      }, apiKey, callbackUrl)
+
+    if (isEnhancedKycCountry) {
+      // ── AFRICAN: Enhanced or Biometric KYC ──
+      if (selfieImage) {
+        // Biometric KYC (ID number + selfie)
+        result = await submitBiometricKyc({
+          partnerId,
+          userId: user.id,
+          jobType: 'biometric_kyc',
+          country,
+          idType: idType!,
+          idNumber: idNumber!,
+          firstName,
+          lastName,
+          dob,
+          selfieImage,
+        }, apiKey, callbackUrl)
+      } else {
+        // Enhanced KYC (ID number only)
+        result = await submitEnhancedKyc({
+          partnerId,
+          userId: user.id,
+          jobType: 'enhanced_kyc',
+          country,
+          idType: idType!,
+          idNumber: idNumber!,
+          firstName,
+          lastName,
+          dob,
+        }, apiKey, callbackUrl)
+      }
     } else {
-      // Enhanced KYC (ID number only)
-      result = await submitEnhancedKyc({
+      // ── INTERNATIONAL: Document Verification (passport/ID photo + selfie) ──
+      result = await submitDocumentVerification({
         partnerId,
         userId: user.id,
-        jobType: 'enhanced_kyc',
-        country: country || 'NG',
-        idType,
-        idNumber,
+        country,
         firstName,
         lastName,
-        dob,
+        selfieImage: selfieImage!,
+        idDocumentFrontImage: idDocumentFrontImage!,
+        idDocumentBackImage,
       }, apiKey, callbackUrl)
     }
 
     // Store the job ID for tracking
+    const kycMethod = isEnhancedKycCountry
+      ? (selfieImage ? 'biometric_kyc' : 'enhanced_kyc')
+      : 'document_verification'
+
     await supabase
       .from('profiles')
       .update({
         smileid_job_id: result.smile_job_id,
         kyc_submitted_at: new Date().toISOString(),
         kyc_level: 'PENDING',
+        kyc_method: kycMethod,
+        kyc_country: country,
       })
       .eq('id', user.id)
 
@@ -1108,6 +1249,7 @@ app.post('/api/kyc/submit', async (c) => {
       message: 'KYC verification submitted',
       job_id: result.smile_job_id,
       status: 'PENDING',
+      method: isEnhancedKycCountry ? 'enhanced_kyc' : 'document_verification',
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'KYC submission failed'
@@ -1354,6 +1496,70 @@ app.get('/api/orders/:id', async (c) => {
 })
 
 // ══════════════════════════════════════════════
+// FILE UPLOAD — WAYBILL IMAGES
+// POST /api/upload/waybill
+// Authenticated vendors only
+// ══════════════════════════════════════════════
+
+app.post('/api/upload/waybill', async (c) => {
+  const user = c.get('user')
+  const serviceSupabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_KEY)
+
+  // Parse multipart form data
+  const formData = await c.req.formData()
+  const file = formData.get('file')
+
+  if (!file || !(file instanceof File)) {
+    return c.json({ error: 'No file provided' }, 400)
+  }
+
+  // Validate file type
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+  if (!allowedTypes.includes(file.type)) {
+    return c.json({ error: 'Invalid file type. Only JPEG, PNG, and WebP are allowed.' }, 400)
+  }
+
+  // Validate file size (5MB max)
+  if (file.size > 5 * 1024 * 1024) {
+    return c.json({ error: 'File too large. Maximum size is 5MB.' }, 400)
+  }
+
+  // Generate unique path
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+  const fileName = `${crypto.randomUUID()}.${ext}`
+  const filePath = `${user.id}/${fileName}`
+
+  try {
+    const arrayBuffer = await file.arrayBuffer()
+    const { error: uploadError } = await serviceSupabase.storage
+      .from('waybills')
+      .upload(filePath, arrayBuffer, {
+        contentType: file.type,
+        cacheControl: '3600',
+        upsert: false,
+      })
+
+    if (uploadError) {
+      console.error('Waybill upload error:', uploadError)
+      return c.json({ error: 'Failed to upload waybill image' }, 500)
+    }
+
+    // Get public URL
+    const { data: urlData } = serviceSupabase.storage
+      .from('waybills')
+      .getPublicUrl(filePath)
+
+    return c.json({
+      path: filePath,
+      url: urlData.publicUrl,
+    })
+  } catch (err) {
+    console.error('Upload error:', err)
+    return c.json({ error: 'Upload failed' }, 500)
+  }
+})
+
+// ══════════════════════════════════════════════
 // MODULE 5: LOGISTICS — RAIL 1 (API Tracking)
 // POST /api/logistics/rail1
 // Vendor only — order must be in PAID status
@@ -1401,8 +1607,7 @@ app.post('/api/logistics/rail1', async (c) => {
     .from('orders')
     .update({
       shipping_type: 'API_AUTOMATED',
-      tracking_id: trackingId,
-      carrier_name: carrier || null,
+      tracking_id: carrier ? `${carrier}: ${trackingId}` : trackingId,
       status: 'SHIPPED',
       shipped_at: new Date().toISOString(),
     })
@@ -1821,7 +2026,7 @@ app.get('/api/admin/disputes', async (c) => {
       created_at,
       product:products(id, title, images, base_price, currency),
       escrow:escrow_ledger(id, gross_amount, fee_amount, net_payout, status, margin_check_passed),
-      buyer:profiles!orders_buyer_id_fkey(id, full_name, email),
+      buyer:profiles!orders_buyer_id_fkey(id, full_name, email, trust_score),
       vendor:profiles!orders_vendor_id_fkey(id, full_name, email, kyc_level)
     `)
     .eq('is_disputed', true)
@@ -2001,6 +2206,22 @@ app.post('/api/admin/disputes/:id/resolve', async (c) => {
     }
   } catch (notifErr) {
     console.error('Failed to send dispute resolution notifications:', notifErr)
+  }
+
+  // ── BUYER TRUST SCORE: Recalculate after dispute resolution ──
+  try {
+    const { data: disputeOrder } = await serviceSupabase
+      .from('orders')
+      .select('buyer_id')
+      .eq('id', orderId)
+      .maybeSingle()
+
+    if (disputeOrder?.buyer_id) {
+      const { score, tier } = await recalculateTrustScore(serviceSupabase, disputeOrder.buyer_id)
+      console.log(`📊 Buyer ${disputeOrder.buyer_id} trust score updated: ${score} (${tier})`)
+    }
+  } catch (trustErr) {
+    console.error('Failed to recalculate trust score:', trustErr)
   }
 
   return c.json({
@@ -2274,37 +2495,20 @@ app.post('/api/admin/payout/execute-batch', async (c) => {
         results.push({ orderId: order.id, status: 'FAILED', error: `Paystack payout: ${payMsg}` })
         continue
       }
-    } else if (payoutRail === 'WISE_GLOBAL' && c.env.WISE_API_TOKEN && c.env.WISE_PROFILE_ID && vendorProfile?.wise_recipient_id) {
-      // Global payout via Wise
-      try {
-        const profileId = Number(c.env.WISE_PROFILE_ID)
-        const quote = await createQuote({
-          profileId,
-          sourceCurrency: 'USD',
-          targetCurrency: vendorProfile.settlement_currency || 'USD',
-          targetAmount: Number(escrow.net_payout),
-        }, c.env.WISE_API_TOKEN)
-
-        const transfer = await createWiseTransfer({
-          targetAccount: Number(vendorProfile.wise_recipient_id),
-          quoteUuid: quote.id,
-          customerTransactionId: `AFIA-PAYOUT-${order.id}`,
-          reference: `Afia Order ${order.id.slice(0, 8)}`,
-        }, c.env.WISE_API_TOKEN)
-
-        await fundTransfer(profileId, transfer.id, c.env.WISE_API_TOKEN)
-
-        escrowUpdate.wise_quote_id = quote.id
-        escrowUpdate.wise_transfer_id = String(transfer.id)
-        escrowUpdate.wise_transfer_status = transfer.status
-        console.log(`🌍 Wise payout for order ${order.id}: transfer ${transfer.id}`)
-      } catch (wiseErr) {
-        const wiseMsg = wiseErr instanceof Error ? wiseErr.message : 'Unknown Wise error'
-        console.error(`❌ Wise payout failed for order ${order.id}:`, wiseMsg)
-        escrowUpdate.status = 'LOCKED' // Revert — admin can retry
-        results.push({ orderId: order.id, status: 'FAILED', error: `Wise payout: ${wiseMsg}` })
-        continue
-      }
+    } else if (payoutRail === 'WISE_GLOBAL') {
+      // International payouts — skip for manual processing via Wise dashboard
+      // Admin should use the "Mark as Paid" feature after manually transferring via Wise
+      results.push({
+        orderId: order.id,
+        status: 'SKIPPED',
+        error: 'International payout — use "Mark as Paid" after processing via Wise dashboard',
+      })
+      // Revert order status since we skipped
+      await serviceSupabase
+        .from('orders')
+        .update({ status: 'DELIVERED' })
+        .eq('id', order.id)
+      continue
     } else {
       // No payout method configured — mark as released (manual payout)
       console.warn(`⚠️ No payout method for order ${order.id} (rail: ${payoutRail}). Marked as RELEASED for manual processing.`)
@@ -2343,6 +2547,130 @@ app.post('/api/admin/payout/execute-batch', async (c) => {
     message: 'Batch payout executed',
     total_released: totalReleased,
     results,
+  })
+})
+
+// ══════════════════════════════════════════════
+// MODULE 8: MANUAL INTERNATIONAL PAYOUT
+// POST /api/admin/payout/mark-paid
+// Admin manually processes via Wise dashboard, then marks as paid here
+// ══════════════════════════════════════════════
+
+app.post('/api/admin/payout/mark-paid', async (c) => {
+  const user = c.get('user')
+  const serviceSupabase = c.get('serviceSupabase')
+
+  let body: { orderId?: string; masterPassword?: string; wiseReference?: string }
+  try {
+    body = await c.req.json()
+  } catch {
+    return c.json({ error: 'Invalid JSON body' }, 400)
+  }
+
+  const { orderId, masterPassword, wiseReference } = body
+
+  if (!orderId || !isValidUUID(orderId)) {
+    return c.json({ error: 'Valid orderId is required' }, 400)
+  }
+  if (!wiseReference || wiseReference.length < 3) {
+    return c.json({ error: 'Wise transfer reference is required (from Wise dashboard)' }, 400)
+  }
+
+  // Master password verification
+  const expectedPassword = c.env.ADMIN_MASTER_PASSWORD
+  if (!expectedPassword) {
+    return c.json({ error: 'Server misconfiguration — contact system administrator' }, 500)
+  }
+  if (!masterPassword) {
+    return c.json({ error: 'Master password is required' }, 401)
+  }
+  const encoder = new TextEncoder()
+  const a = encoder.encode(masterPassword)
+  const b = encoder.encode(expectedPassword)
+  if (a.byteLength !== b.byteLength) {
+    return c.json({ error: 'Invalid master password' }, 401)
+  }
+  let mismatch = 0
+  for (let i = 0; i < a.byteLength; i++) {
+    mismatch |= a[i] ^ b[i]
+  }
+  if (mismatch !== 0) {
+    return c.json({ error: 'Invalid master password' }, 401)
+  }
+
+  // Fetch order + escrow
+  const { data: order, error: fetchErr } = await serviceSupabase
+    .from('orders')
+    .select(`
+      id, status, vendor_id, is_disputed,
+      escrow:escrow_ledger(id, net_payout, status, payout_rail_type)
+    `)
+    .eq('id', orderId)
+    .single()
+
+  if (fetchErr || !order) {
+    return c.json({ error: 'Order not found' }, 404)
+  }
+
+  if (order.status !== 'DELIVERED') {
+    return c.json({ error: `Order status is ${order.status}, expected DELIVERED` }, 400)
+  }
+  if (order.is_disputed) {
+    return c.json({ error: 'Order is disputed — resolve dispute first' }, 400)
+  }
+
+  const escrow = Array.isArray(order.escrow) ? order.escrow[0] : order.escrow
+  if (!escrow || escrow.status !== 'LOCKED') {
+    return c.json({ error: 'Escrow not in LOCKED state' }, 400)
+  }
+
+  // Update order to COMPLETED
+  const { error: orderErr } = await serviceSupabase
+    .from('orders')
+    .update({ status: 'COMPLETED' })
+    .eq('id', orderId)
+
+  if (orderErr) {
+    return c.json({ error: 'Failed to update order status' }, 500)
+  }
+
+  // Update escrow to RELEASED with Wise reference
+  const { error: escrowErr } = await serviceSupabase
+    .from('escrow_ledger')
+    .update({
+      status: 'RELEASED',
+      payout_executed_at: new Date().toISOString(),
+      payout_executed_by: user.id,
+      wise_transfer_id: wiseReference,
+      wise_transfer_status: 'MANUAL_COMPLETED',
+    })
+    .eq('id', escrow.id)
+
+  if (escrowErr) {
+    return c.json({ error: 'Order completed but escrow update failed' }, 500)
+  }
+
+  // Audit log
+  await logAuditAction(serviceSupabase, {
+    adminId: user.id,
+    action: 'MANUAL_INTERNATIONAL_PAYOUT',
+    targetType: 'payout',
+    targetId: orderId,
+    metadata: {
+      wise_reference: wiseReference,
+      net_payout: escrow.net_payout,
+      payout_rail: escrow.payout_rail_type,
+      vendor_id: order.vendor_id,
+    },
+  })
+
+  console.log(`🌍 MANUAL PAYOUT: Order ${orderId} marked as paid via Wise (ref: ${wiseReference}) by admin ${user.id}`)
+
+  return c.json({
+    message: 'Order marked as paid — escrow released',
+    orderId,
+    wiseReference,
+    netPayout: escrow.net_payout,
   })
 })
 
@@ -2536,6 +2864,111 @@ app.post('/api/admin/vendors/:id/treasury-toggle', async (c) => {
   })
 
   return c.json({ message: `Treasury mode set to ${mode}` })
+})
+
+// ══════════════════════════════════════════════
+// MODULE 8: ADMIN — BUYER TRUST MANAGEMENT
+// GET /api/admin/buyers — List buyers with trust scores
+// POST /api/admin/buyers/:id/trust-score — Set trust score
+// ══════════════════════════════════════════════
+
+app.get('/api/admin/buyers', async (c) => {
+  const serviceSupabase = c.get('serviceSupabase')
+
+  const { data: buyers, error } = await serviceSupabase
+    .from('profiles')
+    .select('id, full_name, email:id, trust_score, kyc_level, kyc_method, kyc_country, created_at')
+    .eq('role', 'BUYER')
+    .order('trust_score', { ascending: true })
+
+  if (error) {
+    return c.json({ error: 'Failed to fetch buyers' }, 500)
+  }
+
+  // Get order counts per buyer (batch)
+  const buyerIds = (buyers || []).map(b => b.id)
+  const { data: orderCounts } = await serviceSupabase
+    .from('orders')
+    .select('buyer_id, status')
+    .in('buyer_id', buyerIds.length > 0 ? buyerIds : ['__none__'])
+
+  // Aggregate stats
+  const statsMap: Record<string, { total: number; completed: number; disputed: number }> = {}
+  for (const o of (orderCounts || [])) {
+    if (!statsMap[o.buyer_id]) statsMap[o.buyer_id] = { total: 0, completed: 0, disputed: 0 }
+    statsMap[o.buyer_id].total++
+    if (o.status === 'COMPLETED') statsMap[o.buyer_id].completed++
+    if (o.status === 'DISPUTED' || o.status === 'REFUNDED') statsMap[o.buyer_id].disputed++
+  }
+
+  // Enrich buyer data with stats and email from auth
+  const enrichedBuyers = (buyers || []).map(b => ({
+    ...b,
+    order_stats: statsMap[b.id] || { total: 0, completed: 0, disputed: 0 },
+  }))
+
+  return c.json({ buyers: enrichedBuyers })
+})
+
+app.post('/api/admin/buyers/:id/trust-score', async (c) => {
+  const buyerId = c.req.param('id')
+  if (!isValidUUID(buyerId)) return c.json({ error: 'Invalid buyer ID' }, 400)
+
+  const user = c.get('user')
+  const serviceSupabase = c.get('serviceSupabase')
+
+  let body: { score?: number }
+  try {
+    body = await c.req.json()
+  } catch {
+    return c.json({ error: 'Invalid JSON body' }, 400)
+  }
+
+  const score = body.score
+  if (score === undefined || typeof score !== 'number' || score < 0 || score > 100) {
+    return c.json({ error: 'score must be a number between 0 and 100' }, 400)
+  }
+
+  // Verify the target is actually a buyer
+  const { data: targetProfile } = await serviceSupabase
+    .from('profiles')
+    .select('role, trust_score')
+    .eq('id', buyerId)
+    .single()
+
+  if (!targetProfile) {
+    return c.json({ error: 'Buyer not found' }, 404)
+  }
+
+  const previousScore = targetProfile.trust_score
+
+  // Update trust score
+  const { error } = await serviceSupabase
+    .from('profiles')
+    .update({ trust_score: score })
+    .eq('id', buyerId)
+
+  if (error) {
+    return c.json({ error: 'Failed to update trust score' }, 500)
+  }
+
+  // Audit log
+  await logAuditAction(serviceSupabase, {
+    adminId: user.id,
+    action: 'TRUST_SCORE_ADJUSTED',
+    targetType: 'profile',
+    targetId: buyerId,
+    metadata: { previous_score: previousScore, new_score: score },
+  })
+
+  console.log(`📊 Admin ${user.id} adjusted buyer ${buyerId} trust score: ${previousScore} → ${score}`)
+
+  return c.json({
+    message: 'Trust score updated',
+    buyer_id: buyerId,
+    previous_score: previousScore,
+    new_score: score,
+  })
 })
 
 // ══════════════════════════════════════════════

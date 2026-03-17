@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
 import { useProducts, type Product } from '../../hooks/useProducts'
 import { useCheckout, type CheckoutData } from '../../hooks/useCheckout'
-import { formatCurrency, getRate } from '../../lib/currency'
+import { formatCurrency } from '../../lib/currency'
 import {
     ShieldCheck, ArrowLeft, Package, CreditCard,
     Lock, AlertTriangle, CheckCircle, Loader2, BadgeCheck
@@ -50,13 +50,10 @@ export default function CheckoutPage() {
         load()
     }, [productId, fetchProduct])
 
-    // ── Derived values ──
+    // ── Derived values (no FX conversion — Paystack handles multi-currency natively) ──
     const unitPrice = product?.base_price || 0
     const subtotal = unitPrice * quantity
-    const fxRate = product ? getRate(product.currency, 'NGN') : null
-    const amountNGN = product?.currency === 'NGN'
-        ? subtotal
-        : fxRate ? subtotal * fxRate : subtotal
+    const currency = product?.currency || 'NGN'
     const isVerified = product?.vendor?.kyc_level === 'VERIFIED'
 
     // ── Handle Pay ──
@@ -73,7 +70,7 @@ export default function CheckoutPage() {
             return
         }
 
-        // Step 2: Open Paystack popup
+        // Step 2: Open Paystack popup (currency passed from backend)
         await payWithPaystack(
             async (reference: string) => {
                 // Step 3: Verify on backend
@@ -247,7 +244,7 @@ export default function CheckoutPage() {
                                             )}
                                         </div>
                                         <p className="text-sm font-semibold text-navy mt-2">
-                                            {formatCurrency(unitPrice, product.currency)}
+                                            {formatCurrency(unitPrice, currency)}
                                             <span className="text-platinum-dark font-normal"> × {quantity}</span>
                                         </p>
                                     </div>
@@ -260,34 +257,15 @@ export default function CheckoutPage() {
                                 <div className="space-y-3 text-sm">
                                     <div className="flex justify-between">
                                         <span className="text-platinum-dark">Subtotal ({quantity} item{quantity > 1 ? 's' : ''})</span>
-                                        <span className="text-navy font-medium">{formatCurrency(subtotal, product.currency)}</span>
+                                        <span className="text-navy font-medium">{formatCurrency(subtotal, currency)}</span>
                                     </div>
-
-                                    {product.currency !== 'NGN' && fxRate && (
-                                        <div className="flex justify-between">
-                                            <span className="text-platinum-dark">
-                                                FX Conversion
-                                                <span className="text-[10px] ml-1">(incl. 3% buffer)</span>
-                                            </span>
-                                            <span className="text-navy font-medium">
-                                                {formatCurrency(amountNGN, 'NGN')}
-                                            </span>
-                                        </div>
-                                    )}
 
                                     <div className="border-t border-platinum pt-3 flex justify-between">
                                         <span className="font-semibold text-navy">Total to Pay</span>
                                         <span className="font-bold text-lg text-navy">
-                                            {formatCurrency(amountNGN, 'NGN')}
+                                            {formatCurrency(subtotal, currency)}
                                         </span>
                                     </div>
-
-                                    {product.currency !== 'NGN' && (
-                                        <p className="text-[10px] text-platinum-dark">
-                                            Original: {formatCurrency(subtotal, product.currency)} •
-                                            Rate: 1 {product.currency} ≈ {fxRate?.toFixed(2)} NGN (incl. buffer)
-                                        </p>
-                                    )}
                                 </div>
                             </div>
 
@@ -300,7 +278,7 @@ export default function CheckoutPage() {
                                         <p className="text-xs text-platinum-dark leading-relaxed">
                                             Your payment will be held in a secure vault — the vendor does NOT receive the funds until
                                             you confirm delivery. You have a 48-hour dispute window after delivery for any issues.
-                                            Platform fee: 15% for escrow security, FX hedging, and dispute resolution.
+                                            Platform fee: 15% for escrow security and dispute resolution.
                                         </p>
                                     </div>
                                 </div>
@@ -352,7 +330,7 @@ export default function CheckoutPage() {
                                     ) : (
                                         <>
                                             <Lock className="w-4 h-4" />
-                                            Pay {formatCurrency(amountNGN, 'NGN')}
+                                            Pay {formatCurrency(subtotal, currency)}
                                         </>
                                     )}
                                 </button>

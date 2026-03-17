@@ -157,22 +157,39 @@ T042,Module 7 - Admin,Vendor Management,Admin - Unflag a Vendor,SUPER_ADMIN,test
 4. Confirm","Flag removed. is_flagged = false. Audit log entry.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
 T043,Module 7 - Admin,Audit Log,Admin - View Audit Trail,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Some admin actions performed,"1. Login as admin
 2. Navigate to Audit Log section","Shows timestamped entries for: dispute resolutions / vendor flags / treasury toggles. Each entry shows: admin / action / target / timestamp.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T044,Module 7 - Admin,Payout Queue,Admin - View Payout Queue,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,None,"1. Login as admin
-2. Navigate to Payout Queue","Shows escrow entries ready for payout (RELEASE_PENDING status). If none exist shows empty state. Should have 'Process Batch Payout' button.","MOCK: Wise API not configured. Actual payout will fail. Note if UI loads correctly.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
+T044,Module 7 - Admin,Payout Queue,Admin - View Payout Queue (Dual-Rail),SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,At least 1 DELIVERED order exists with auto_release_at in past,"1. Login as admin
+2. Navigate to Payout Queue
+3. If orders exist: expand a row to see details
+4. Check for payout rail badges (🇳🇬 NGN / 🌍 USD etc.)
+5. If international order exists: check for blue 'Copy details to Wise Dashboard' section","Shows escrow entries ready for payout. Each row shows vendor name with payout rail badge. Expanding a row shows order details. International orders show vendor bank details (Account Holder, IBAN, SWIFT, Currency) with copy buttons and 'Mark as Paid' button. Nigerian orders use batch payout via Paystack.","MOCK: If no DELIVERED orders exist payout queue will be empty. That's OK — check that UI layout loads.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
 T045,Module 7 - Admin,Treasury,Admin - Toggle Treasury Mode,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,At least 1 vendor exists,"1. Login as admin
 2. Find a vendor
 3. Toggle treasury mode (AUTO ↔ MANUAL)","Treasury mode changes. Audit log entry created.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
 T046,Module 8 - Payments,KYC,Vendor - View KYC Status,VENDOR,testvendor@afia.com,NeoaTest2026!,KYC = VERIFIED,"1. Login as vendor
 2. Go to /vendor/settings
 3. View KYC section","Should show 'Verified' badge. KYC verification date shown.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T047,Module 8 - Payments,KYC,Unverified Vendor - Initiate KYC,VENDOR,-- (new vendor from T002),TestQA2026!,"KYC = NONE, SmileID sandbox","1. Login as unverified vendor
+T047,Module 8 - Payments,KYC,Unverified Vendor - Initiate KYC (African Country),VENDOR,-- (new vendor from T002),TestQA2026!,"KYC = NONE, SmileID sandbox","1. Login as unverified vendor
 2. Go to Settings
 3. Click 'Start KYC Verification'
-4. Observe SmileID form","SmileID integration page loads. BVN input field shown. Submit button shown.","MOCK: SmileID sandbox — won't fully verify. Note if the UI form loads.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T048,Module 8 - Payments,Bank Setup,Vendor - Add Bank Account,VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as verified vendor,"1. Go to /vendor/settings
+4. Select 'Nigeria' from country list
+5. Select ID type (BVN / NIN / Voter's Card)
+6. Enter ID Number and personal details
+7. Take selfie (if Biometric KYC)
+8. Submit","SmileID integration page loads. Country grid shown. After selecting Nigeria: ID type picker shown. ID number field shown. Submit button shown. On submit: status changes to PENDING. Profile shows kyc_method and kyc_country.","MOCK: SmileID sandbox — won't fully verify. Note if the UI form loads and submission goes through.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
+T048,Module 8 - Payments,Bank Setup,Vendor - Add Nigerian Bank Account (Paystack),VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as verified vendor with kyc_country=NG,"1. Go to /vendor/settings
 2. Navigate to Bank Account section
-3. Enter: Account Number = '0123456789' / Select Bank / BVN = '22222222222'
-4. Click Save/Verify","Bank details saved. Success toast. Account name resolved via Paystack.","MOCK: If Paystack key is placeholder bank verification will fail. Note this.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
+3. If rail selection screen appears: select '🇳🇬 Nigerian Bank (Paystack)'
+4. Select bank from dropdown (e.g. 'Guaranty Trust Bank')
+5. Enter Account Number: '0123456789'
+6. Click 'Verify & Save Bank Account'","Bank list loads (from Paystack API or fallback). Bank dropdown is searchable. On submit: account name resolved via Paystack. Success toast shown. Shows 'Ready for payouts'. Profile updated with bank_account_number, bank_code, bank_name.","MOCK: If Paystack key is placeholder, bank verification will fail. Note this.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
+T076,Module 8 - Payments,Bank Setup,Vendor - Add International Bank Account (Wise),VENDOR,-- (international vendor),TestQA2026!,"Logged in as verified vendor with kyc_country != NG (e.g. 'US'). Complete KYC with 'Other Country' first.","1. Go to /vendor/settings
+2. Navigate to Bank Account section
+3. If rail selection appears: select '🌍 International Bank (Wise)'
+4. Select payout currency (e.g. USD)
+5. Enter Account Holder Name: 'John Doe'
+6. Enter IBAN or Account Number: 'US1234567890'
+7. Enter SWIFT/BIC: 'BOFAUS3N' (optional)
+8. Click 'Save International Bank Details'","Currency selector shows 5 options with flags (USD/EUR/GBP/CAD/AUD). Form fields for holder name, IBAN, SWIFT visible. On submit: success message shown with 'Payouts via Wise'. Profile updated with settlement_currency = 'USD'. Payout information section mentions Wise.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
 T049,Module 8 - Payments,FX Rates,View Live FX Rates,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in,"1. Login as buyer
 2. View a USD-priced product
 3. Check if NGN equivalent is shown","Should show USD price and estimated NGN conversion rate.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
@@ -245,6 +262,76 @@ E2E-003,E2E,Full Flow,VENDOR ONBOARDING TO FIRST SALE,VENDOR,testvendor@afia.com
 E2E-004,E2E,Full Flow,ADMIN GOD MODE - FULL CAPABILITIES,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Users + orders + disputes exist,"1. Login as admin
 2. Dashboard → verify analytics cards show data
 3. Vendor Management → view vendors → flag one → check audit log → unflag
-4. Disputes → view disputes → add notes → resolve one
-5. Payout Queue → check for pending payouts
-6. Audit Log → verify ALL actions from steps 3-5 appear","Admin can access all God Mode features. All actions create audit trail. Data displayed accurately.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
+4. Disputes → view disputes → verify trust score badge on buyer → add notes → resolve one
+5. Buyer Management → view all buyers → verify trust scores shown → adjust one buyer's score → check audit log
+6. Payout Queue → check for pending payouts
+7. Audit Log → verify ALL actions from steps 3-6 appear (including TRUST_SCORE_ADJUSTED)","Admin can access all God Mode features including Buyer Management. All actions create audit trail. Trust scores visible in disputes and buyer panel. Data displayed accurately.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
+T067,Module 8 - Payments,KYC,Unverified Vendor - Initiate KYC (International / Other Country),VENDOR,-- (new vendor from T002),TestQA2026!,"KYC = NONE, SmileID sandbox","1. Login as unverified vendor
+2. Go to Settings → Click 'Start KYC Verification'
+3. Scroll down and click '🌍 Other Country' (gold dashed border button)
+4. Enter Country Code: 'US'
+5. Enter First Name and Last Name
+6. Click Next → Document Upload step appears
+7. Upload a photo of ID front (required)
+8. Optionally upload ID back
+9. Click Next → Selfie capture step
+10. Take selfie with camera
+11. Click Submit","'Other Country' option visible with globe icon. After clicking: country code input shown. Document upload screen shows front/back upload areas. Selfie screen works. On submit: KYC status changes to PENDING. Profile stores kyc_method='document_verification' and kyc_country='US'. Progress bar shows 4 steps (not 3).","MOCK: SmileID Document Verification sandbox — won't fully verify. Note if UI flow completes and submission reaches API.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
+T068,Module 8 - Trust Score,Buyer Dashboard,Buyer - View Trust Score on Dashboard,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in as buyer,"1. Login as buyer
+2. Go to /dashboard
+3. Observe the stats cards row","First card shows 'Trust Score' with a number (default: 50). Shows circular progress ring colored by tier. Shows tier label: 'Normal' (for score 50). Star icon visible.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
+T069,Module 8 - Trust Score,Checkout Gate,Buyer - Flagged Buyer Cannot Checkout,BUYER,testbuyer@afia.com,NeoaTest2026!,"Buyer trust_score set to 10 via admin panel (T072). Product exists.","1. Login as the flagged buyer
+2. Go to /catalog → click a product
+3. Click 'Buy Now' → checkout page
+4. Click 'Pay with Paystack'","API returns 403 error. Error message explains the buyer's account is under review and to contact support. Paystack popup does NOT open. Buyer cannot complete purchase.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
+T070,Module 8 - Trust Score,Checkout Gate,Buyer - Normal Buyer Can Checkout,BUYER,testbuyer@afia.com,NeoaTest2026!,"Buyer trust_score = 50 (reset back via admin panel). Product exists.","1. Login as buyer (trust score back to 50)
+2. Go to /catalog → click a product
+3. Click 'Buy Now'
+4. Click 'Pay with Paystack'","Paystack popup opens. Checkout proceeds normally. No 403 error. Trust gate passes.","Requires real Paystack test key for payment to complete.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
+T071,Module 8 - Trust Score,Admin Panel,Admin - View Buyer Management Section,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,None,"1. Login as admin
+2. Click 'Buyers' in the sidebar navigation","Buyer Management page loads. Shows: Total Buyers count / Average Score / Flagged Accounts count. Search bar visible. List of all buyers with trust score badges (colored by tier). Each buyer shows order stats (total/completed/disputed).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
+T072,Module 8 - Trust Score,Admin Panel,Admin - Flag a Buyer (Adjust Trust Score),SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,At least 1 buyer exists,"1. Login as admin
+2. Go to Buyers section
+3. Click on a buyer to expand details
+4. In 'Adjust Trust Score' section click 'Flag (10)' preset button
+5. Click 'Apply'","Score updates to 10. Badge changes to red 'Flagged'. Flagged Accounts counter increments. Audit log entry created with action TRUST_SCORE_ADJUSTED showing previous and new score. Warning text confirms score ≤ 20 blocks purchases.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
+T073,Module 8 - Trust Score,Admin Panel,Admin - Unflag a Buyer (Reset Trust Score),SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Buyer is flagged from T072,"1. Login as admin
+2. Go to Buyers section
+3. Expand the flagged buyer
+4. Click 'Reset (50)' preset button
+5. Click 'Apply'","Score updates to 50. Badge changes to gray 'Normal'. Flagged Accounts counter decrements. Audit log entry created.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
+T074,Module 8 - Trust Score,Disputes,Admin - View Buyer Trust Badge in Disputes,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,At least 1 disputed order exists,"1. Login as admin
+2. Go to Disputes section
+3. View a dispute card
+4. Check buyer info line","Next to 'by [Buyer Name]' text: colored trust score badge shows (e.g., '⭐ 50 · Normal'). Badge color matches tier: red for Flagged / gray for Normal / green for Trusted / gold for Premium.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
+T075,Module 8 - Trust Score,Recalculation,Trust Score Auto-Recalculates After Dispute Resolution,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Disputed order exists for a buyer whose trust_score is known,"1. Login as admin → note buyer's current trust_score in Buyers section
+2. Go to Disputes → resolve a dispute (Refund Buyer = dispute WON by buyer)
+3. Go to Buyers section → check the same buyer's score","Buyer's trust score has been recalculated. Score changes based on outcome: dispute won = slight increase (+5) / dispute lost = decrease (-15). Score visible immediately in admin Buyers panel.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
+T077,Module 8 - Payments,Payout Queue,Payout Rail Badge Display,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,"Orders exist from both NGN and international vendors in payout queue","1. Login as admin → Payout Queue
+2. Check the payout row for a Nigerian vendor
+3. Check the payout row for an international vendor","Nigerian vendor row shows '🇳🇬 NGN' green badge next to vendor name. International vendor row shows '🌍 USD' (or EUR/GBP) blue badge with Globe icon. Both have expand arrow. Summary cards show correct totals.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
+T078,Module 8 - Payments,Payout Queue,International Bank Details with Copy Buttons,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,"International vendor order in payout queue with bank details saved","1. Login as admin → Payout Queue
+2. Expand an international vendor's order row
+3. Check for blue 'International Payout' section
+4. Click copy button next to IBAN
+5. Verify clipboard contains the IBAN value","Blue section appears with: Account Holder (with copy button) / IBAN or Account No. (with copy button) / SWIFT/BIC (with copy button) / Currency. 'Open Wise' link opens wise.com/send in new tab. Copy buttons show green checkmark momentarily after clicking. 'Mark as Paid' button visible at bottom.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
+T079,Module 8 - Payments,Payout Queue,Admin - Mark International Payout as Paid (Manual Wise),SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,"International vendor order in payout queue. Admin has already processed the transfer in Wise dashboard.","1. Login as admin → Payout Queue
+2. Expand international order → click 'Mark as Paid'
+3. Modal appears → enter Wise Transfer Reference (e.g. 'TRANSFER-12345678')
+4. Enter master password
+5. Click 'Confirm Payout Complete'","Modal shows vendor name / amount / currency / account details. After confirming: order disappears from payout queue. Order status changes to COMPLETED. Escrow status changes to RELEASED with wise_transfer_id = the reference entered. Audit log entry created with action MANUAL_INTERNATIONAL_PAYOUT.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
+T080,Module 8 - Payments,Payout Queue,Batch Payout Skips International Orders,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,"Both NGN and international orders in payout queue","1. Login as admin → Payout Queue
+2. Select All orders (including mix of NGN and international)
+3. Click 'Process Batch Payout'
+4. Enter master password → Confirm & Execute
+5. Check results","NGN orders show 'RELEASED' status. International orders show 'SKIPPED' with message: 'International payout — use Mark as Paid after processing via Wise dashboard'. International orders remain in queue for manual processing. NGN vendors receive Paystack transfer.","Requires valid Paystack secret key for NGN transfers to succeed.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
+E2E-005,E2E,Full Flow,BUYER TRUST SCORE LIFECYCLE,BOTH,See steps,See steps,"Buyer exists with orders. Admin account exists.","1. Login as buyer (testbuyer@afia.com / NeoaTest2026!) → verify Trust Score card shows 50/Normal on dashboard
+2. Complete a purchase (buy product → pay via Paystack)
+3. Vendor ships → Buyer confirms delivery → 48h window passes or auto-completes
+4. Login as buyer → check if Trust Score increased (should be > 50)
+5. Login as admin (testadmin@afia.com / NeoaAdmin2026!) → go to Buyers → verify buyer's score is updated
+6. Admin: flag buyer by setting score to 10 → verify audit log
+7. Login as buyer → attempt to Buy Now on any product
+8. Should see 403 blocked message at checkout
+9. Admin: reset score to 50 → verify audit log
+10. Buyer: retry purchase → should succeed","Trust score starts at 50. Increases after successful orders. Admin can flag (block from buying) and unflag. Flagged buyers see clear error at checkout. All adjustments logged in audit trail.","Requires real Paystack test key for purchase steps. Auto-complete requires 48h wait or manual DB trigger.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical

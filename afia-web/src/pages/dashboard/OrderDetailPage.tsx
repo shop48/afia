@@ -9,6 +9,7 @@ import StepTracker from '../../components/ui/StepTracker'
 import CountdownTimer from '../../components/logistics/CountdownTimer'
 import { useOrders, getProduct, getEscrow, getVendor, getStepFromStatus } from '../../hooks/useOrders'
 import { supabase } from '../../lib/supabase'
+import { formatCurrency } from '../../lib/currency'
 
 export default function OrderDetailPage() {
     const { orderId } = useParams<{ orderId: string }>()
@@ -419,10 +420,10 @@ export default function OrderDetailPage() {
                                 )}
                                 <p className="font-semibold text-navy m-0">{product?.title}</p>
                                 <p className="text-platinum-dark text-sm mt-1 mb-0">
-                                    Qty: {order.quantity} × {order.currency} {product?.base_price?.toLocaleString()}
+                                    Qty: {order.quantity} × {formatCurrency(product?.base_price || 0, order.currency || 'NGN')}
                                 </p>
                                 <p className="font-bold text-navy text-lg mt-1 mb-0">
-                                    Total: {order.currency} {order.total_amount.toLocaleString()}
+                                    Total: {formatCurrency(order.total_amount, order.currency || 'NGN')}
                                 </p>
                             </div>
 

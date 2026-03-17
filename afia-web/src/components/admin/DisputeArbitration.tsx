@@ -7,6 +7,7 @@ import {
     Package, RefreshCcw, HeartCrack, HelpCircle, Lock, Radio, Paperclip, CheckCircle2
 } from 'lucide-react'
 import { staggerContainer, staggerItem } from '../../lib/animations'
+import { formatCurrency } from '../../lib/currency'
 
 // ─── Types ───
 interface Dispute {
@@ -34,7 +35,7 @@ interface Dispute {
     created_at: string
     product: { id: string; title: string; images?: string[]; base_price: number; currency: string } | null
     escrow: { id: string; gross_amount: number; fee_amount: number; net_payout: number; status: string; margin_check_passed: boolean } | null
-    buyer: { id: string; full_name: string; email: string } | null
+    buyer: { id: string; full_name: string; email: string; trust_score: number | null } | null
     vendor: { id: string; full_name: string; email: string; kyc_level: string } | null
 }
 
@@ -273,15 +274,25 @@ export default function DisputeArbitration() {
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-xs text-platinum-dark mt-0.5 mb-0">
-                                            by {buyer?.full_name || 'Unknown Buyer'} · {dispute.disputed_at ? timeSince(dispute.disputed_at) : 'Unknown'}
+                                        <p className="text-xs text-platinum-dark mt-0.5 mb-0 flex items-center gap-2 flex-wrap">
+                                            <span>by {buyer?.full_name || 'Unknown Buyer'} · {dispute.disputed_at ? timeSince(dispute.disputed_at) : 'Unknown'}</span>
+                                            {buyer?.trust_score != null && (() => {
+                                                const s = buyer.trust_score!
+                                                const tier = s <= 20 ? 'Flagged' : s <= 50 ? 'Normal' : s <= 80 ? 'Trusted' : 'Premium'
+                                                const cls = s <= 20 ? 'bg-red-100 text-red-700' : s <= 50 ? 'bg-gray-100 text-gray-600' : s <= 80 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                                                return (
+                                                    <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold rounded-full ${cls}`}>
+                                                        ⭐ {s} · {tier}
+                                                    </span>
+                                                )
+                                            })()}
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center gap-3 shrink-0">
                                     <span className="text-lg font-bold text-navy whitespace-nowrap">
-                                        {dispute.currency} {dispute.total_amount?.toLocaleString()}
+                                        {formatCurrency(dispute.total_amount, dispute.currency || 'NGN')}
                                     </span>
                                     {isExpanded ? <ChevronUp className="w-5 h-5 text-platinum-dark" /> : <ChevronDown className="w-5 h-5 text-platinum-dark" />}
                                 </div>
@@ -388,15 +399,15 @@ export default function DisputeArbitration() {
                                                 <div className="bg-platinum-light rounded-xl p-4 mb-4 flex flex-wrap items-center gap-4">
                                                     <div>
                                                         <span className="text-xs text-platinum-dark">Gross</span>
-                                                        <p className="text-sm font-bold text-navy m-0">{dispute.currency} {escrow.gross_amount?.toLocaleString()}</p>
+                                                        <p className="text-sm font-bold text-navy m-0">{formatCurrency(escrow.gross_amount, dispute.currency || 'NGN')}</p>
                                                     </div>
                                                     <div>
                                                         <span className="text-xs text-platinum-dark">Fee (15%)</span>
-                                                        <p className="text-sm font-medium text-platinum-dark m-0">{dispute.currency} {escrow.fee_amount?.toLocaleString()}</p>
+                                                        <p className="text-sm font-medium text-platinum-dark m-0">{formatCurrency(escrow.fee_amount, dispute.currency || 'NGN')}</p>
                                                     </div>
                                                     <div>
                                                         <span className="text-xs text-platinum-dark">Net Payout</span>
-                                                        <p className="text-sm font-bold text-neoa-emerald m-0">{dispute.currency} {escrow.net_payout?.toLocaleString()}</p>
+                                                        <p className="text-sm font-bold text-neoa-emerald m-0">{formatCurrency(escrow.net_payout, dispute.currency || 'NGN')}</p>
                                                     </div>
                                                     <div className="ml-auto">
                                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${escrow.status === 'LOCKED' ? 'bg-amber-100 text-amber-700' : escrow.status === 'RELEASED' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>

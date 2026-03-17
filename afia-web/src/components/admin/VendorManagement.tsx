@@ -8,7 +8,7 @@ import {
 import { apiClient } from '../../lib/api'
 
 // ═══════════════════════════════════════════════
-// MODULE 7.2: VENDOR MANAGEMENT
+// MODULE 7.2: VENDOR MANAGEMENT (LIGHT THEME)
 // Flag, KYC Velocity Alerts, Treasury Toggle
 // ═══════════════════════════════════════════════
 
@@ -112,7 +112,7 @@ export default function VendorManagement() {
         return (
             <div className="space-y-4">
                 {[1, 2, 3].map(i => (
-                    <div key={i} className="animate-pulse bg-white/5 rounded-2xl h-24 border border-white/10" />
+                    <div key={i} className="animate-pulse bg-platinum-light rounded-2xl h-24 border border-platinum" />
                 ))}
             </div>
         )
@@ -123,7 +123,7 @@ export default function VendorManagement() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-gold font-[family-name:var(--font-heading)]">
+                    <h2 className="text-2xl font-bold text-navy font-[family-name:var(--font-heading)]">
                         Vendor Management
                     </h2>
                     <p className="text-sm text-platinum-dark mt-1">
@@ -137,13 +137,13 @@ export default function VendorManagement() {
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-ruby/10 border border-ruby/30 rounded-2xl p-4"
+                    className="bg-red-50 border border-red-200 rounded-2xl p-4"
                 >
-                    <div className="flex items-center gap-2 text-ruby font-bold mb-2">
+                    <div className="flex items-center gap-2 text-red-600 font-bold mb-2">
                         <AlertTriangle className="w-5 h-5" />
                         KYC Velocity Alert
                     </div>
-                    <p className="text-sm text-ruby/80">
+                    <p className="text-sm text-red-600/80">
                         {vendors.filter(v => v.kyc_velocity_alert).length} vendor(s) exceeded $500 in their first 48 hours
                         — potential Sybil attack indicator. Review flagged vendors below.
                     </p>
@@ -158,13 +158,13 @@ export default function VendorManagement() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search vendors by name or email..."
-                    className="w-full pl-11 pr-4 py-3 bg-navy-light border border-white/10 rounded-xl text-white 
-            placeholder:text-platinum-dark focus:outline-none focus:border-gold/30 transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-white border border-platinum rounded-xl text-navy 
+            placeholder:text-platinum-dark focus:outline-none focus:border-gold/50 focus:ring-2 focus:ring-gold/10 transition-all"
                 />
             </div>
 
             {error && (
-                <div className="bg-ruby/10 border border-ruby/30 text-ruby rounded-xl p-4 text-sm">
+                <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-4 text-sm">
                     {error}
                     <button onClick={() => setError(null)} className="ml-2 underline cursor-pointer">Dismiss</button>
                 </div>
@@ -184,35 +184,35 @@ export default function VendorManagement() {
                         <motion.div
                             key={vendor.id}
                             layout
-                            className={`bg-navy-light/30 border rounded-2xl p-5 transition-all ${vendor.is_flagged
-                                ? 'border-ruby/40 bg-ruby/5'
+                            className={`bg-white border rounded-2xl p-5 transition-all ${vendor.is_flagged
+                                ? 'border-red-300 bg-red-50/50'
                                 : vendor.kyc_velocity_alert
-                                    ? 'border-amber-500/40 bg-amber-500/5'
-                                    : 'border-white/10 hover:border-white/20'
+                                    ? 'border-amber-300 bg-amber-50/50'
+                                    : 'border-platinum hover:border-platinum-dark hover:shadow-sm'
                                 }`}
                         >
                             <div className="flex items-start gap-4">
                                 {/* Avatar */}
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${vendor.is_flagged ? 'bg-ruby/20' : 'bg-gold/10'
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${vendor.is_flagged ? 'bg-red-100' : 'bg-gold/10'
                                     }`}>
                                     {vendor.is_flagged
-                                        ? <ShieldAlert className="w-6 h-6 text-ruby" />
+                                        ? <ShieldAlert className="w-6 h-6 text-red-500" />
                                         : <ShieldCheck className="w-6 h-6 text-gold" />}
                                 </div>
 
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <h3 className="font-semibold text-white truncate">
+                                        <h3 className="font-semibold text-navy truncate">
                                             {vendor.full_name || 'Unnamed Vendor'}
                                         </h3>
                                         {vendor.is_flagged && (
-                                            <span className="text-xs bg-ruby/20 text-ruby px-2 py-0.5 rounded-full font-medium">
+                                            <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">
                                                 <Flag className="w-3 h-3 inline-block mr-0.5" /> Flagged
                                             </span>
                                         )}
                                         {vendor.kyc_velocity_alert && !vendor.is_flagged && (
-                                            <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-medium">
+                                            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
                                                 <AlertTriangle className="w-3 h-3 inline-block mr-0.5" /> Velocity Alert
                                             </span>
                                         )}
@@ -229,7 +229,7 @@ export default function VendorManagement() {
                                             <DollarSign className="w-3.5 h-3.5" />
                                             <span>{formatCurrency(vendor.total_escrowed)} escrowed</span>
                                         </div>
-                                        <div className={`flex items-center gap-1.5 ${vendor.dispute_rate > 20 ? 'text-ruby' : 'text-platinum-dark'
+                                        <div className={`flex items-center gap-1.5 ${vendor.dispute_rate > 20 ? 'text-red-500' : 'text-platinum-dark'
                                             }`}>
                                             <TrendingDown className="w-3.5 h-3.5" />
                                             <span>{vendor.dispute_rate}% disputes</span>
@@ -241,7 +241,7 @@ export default function VendorManagement() {
                                     </div>
 
                                     {vendor.is_flagged && vendor.flag_reason && (
-                                        <p className="text-xs text-ruby/70 mt-2 italic">
+                                        <p className="text-xs text-red-500/70 mt-2 italic">
                                             Reason: {vendor.flag_reason}
                                         </p>
                                     )}
@@ -257,8 +257,8 @@ export default function VendorManagement() {
                                         })}
                                         className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium 
                       transition-colors cursor-pointer ${vendor.is_flagged
-                                                ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20'
-                                                : 'bg-ruby/10 text-ruby hover:bg-ruby/20 border border-ruby/20'
+                                                ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200'
+                                                : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
                                             }`}
                                     >
                                         <Flag className="w-3.5 h-3.5" />
@@ -271,8 +271,8 @@ export default function VendorManagement() {
                                         disabled={treasuryLoading === vendor.id}
                                         className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium 
                       transition-colors cursor-pointer border disabled:opacity-50 ${vendor.treasury_mode === 'MANUAL_HOLD'
-                                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20'
-                                                : 'bg-white/5 text-platinum-dark border-white/10 hover:bg-white/10'
+                                                ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                                                : 'bg-platinum-light text-platinum-dark border-platinum hover:bg-platinum'
                                             }`}
                                         title={vendor.treasury_mode === 'AUTO' ? 'Switch to Manual Hold' : 'Switch to Auto-Payout'}
                                     >
@@ -295,7 +295,7 @@ export default function VendorManagement() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
                         onClick={() => { setFlagModal(null); setFlagReason('') }}
                     >
                         <motion.div
@@ -303,16 +303,16 @@ export default function VendorManagement() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-navy-dark border border-white/20 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+                            className="bg-white border border-platinum rounded-2xl p-6 w-full max-w-md shadow-2xl"
                         >
                             <div className="flex items-center gap-3 mb-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${flagModal.action === 'FLAG' ? 'bg-ruby/20' : 'bg-emerald-500/20'
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${flagModal.action === 'FLAG' ? 'bg-red-100' : 'bg-emerald-100'
                                     }`}>
-                                    <Flag className={`w-5 h-5 ${flagModal.action === 'FLAG' ? 'text-ruby' : 'text-emerald-400'
+                                    <Flag className={`w-5 h-5 ${flagModal.action === 'FLAG' ? 'text-red-500' : 'text-emerald-500'
                                         }`} />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-white">
+                                    <h3 className="font-bold text-navy">
                                         {flagModal.action === 'FLAG' ? 'Flag Vendor' : 'Unflag Vendor'}
                                     </h3>
                                     <p className="text-sm text-platinum-dark">
@@ -331,8 +331,8 @@ export default function VendorManagement() {
                                         onChange={(e) => setFlagReason(e.target.value)}
                                         placeholder="Enter reason for flagging..."
                                         rows={3}
-                                        className="w-full px-4 py-3 bg-navy-light border border-white/20 rounded-xl text-white 
-                      placeholder:text-platinum-dark focus:outline-none focus:border-ruby/50 
+                                        className="w-full px-4 py-3 bg-platinum-light border border-platinum rounded-xl text-navy 
+                      placeholder:text-platinum-dark focus:outline-none focus:border-red-300 
                       resize-none transition-all mb-4"
                                     />
                                 </>
@@ -348,7 +348,7 @@ export default function VendorManagement() {
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => { setFlagModal(null); setFlagReason('') }}
-                                    className="flex-1 px-4 py-3 bg-white/5 text-platinum rounded-xl hover:bg-white/10 
+                                    className="flex-1 px-4 py-3 bg-platinum-light text-platinum-dark rounded-xl hover:bg-platinum 
                     transition-colors font-medium cursor-pointer"
                                 >
                                     Cancel
@@ -358,7 +358,7 @@ export default function VendorManagement() {
                                     disabled={flagLoading}
                                     className={`flex-1 px-4 py-3 font-bold rounded-xl transition-colors 
                     disabled:opacity-50 cursor-pointer ${flagModal.action === 'FLAG'
-                                            ? 'bg-ruby text-white hover:bg-ruby/90'
+                                            ? 'bg-red-600 text-white hover:bg-red-700'
                                             : 'bg-emerald-500 text-white hover:bg-emerald-600'
                                         }`}
                                 >

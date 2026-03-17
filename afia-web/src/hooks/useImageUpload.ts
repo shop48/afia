@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
-const BUCKET = 'product-images'
+const DEFAULT_BUCKET = 'product-images'
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
@@ -11,7 +11,7 @@ export interface UploadResult {
     url: string
 }
 
-export function useImageUpload() {
+export function useImageUpload(bucket: string = DEFAULT_BUCKET) {
     const { user } = useAuth()
     const [uploading, setUploading] = useState(false)
     const [progress, setProgress] = useState(0)
@@ -57,7 +57,7 @@ export function useImageUpload() {
             }, 200)
 
             const { error: uploadError } = await supabase.storage
-                .from(BUCKET)
+                .from(bucket)
                 .upload(filePath, file, {
                     cacheControl: '3600',
                     upsert: false,
@@ -73,7 +73,7 @@ export function useImageUpload() {
 
             // Get public URL
             const { data: urlData } = supabase.storage
-                .from(BUCKET)
+                .from(bucket)
                 .getPublicUrl(filePath)
 
             setProgress(100)
@@ -106,7 +106,7 @@ export function useImageUpload() {
     const deleteImage = useCallback(async (filePath: string): Promise<boolean> => {
         try {
             const { error: deleteError } = await supabase.storage
-                .from(BUCKET)
+                .from(bucket)
                 .remove([filePath])
 
             if (deleteError) {
@@ -123,12 +123,13 @@ export function useImageUpload() {
     // ── Extract storage path from a public URL ──
     const getPathFromUrl = useCallback((url: string): string | null => {
         try {
-            const match = url.match(/\/product-images\/(.+)$/)
+            const regex = new RegExp(`\\/${bucket.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\/(.+)$`)
+            const match = url.match(regex)
             return match ? match[1] : null
         } catch {
             return null
         }
-    }, [])
+    }, [bucket])
 
     return {
         uploading,

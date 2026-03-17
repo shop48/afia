@@ -25,13 +25,13 @@ interface VelocityResult {
  *
  * @param supabase - Service-role Supabase client (bypasses RLS)
  * @param vendorId - ID of the vendor to check
- * @param currentOrderAmountNgn - The amount of the current order in NGN
- * @param fxRate - Current USD/NGN rate for conversion
+ * @param currentOrderAmount - The amount of the current order (in its currency)
+ * @param fxRate - Current USD/NGN rate for conversion (use 1 if order is already in USD)
  */
 export async function checkKycVelocity(
     supabase: SupabaseClient,
     vendorId: string,
-    currentOrderAmountNgn: number,
+    currentOrderAmount: number,
     fxRate: number | null
 ): Promise<VelocityResult> {
     const defaultResult: VelocityResult = {
@@ -65,8 +65,8 @@ export async function checkKycVelocity(
 
             // First sale — check if this single order exceeds threshold
             const orderUsd = fxRate && fxRate > 0
-                ? currentOrderAmountNgn / fxRate
-                : currentOrderAmountNgn // Assume NGN = USD if no rate (conservative)
+                ? currentOrderAmount / fxRate
+                : currentOrderAmount // If fxRate=1 it's already USD
 
             return {
                 flagged: orderUsd > VELOCITY_THRESHOLD_USD,
@@ -105,12 +105,17 @@ export async function checkKycVelocity(
 
         for (const order of orders) {
             const amount = Number(order.total_amount) || 0
-            // Assume all amounts are in NGN (Paystack charges in NGN)
-            totalUsd += amount / rate
+            const orderCurrency = (order as { currency?: string }).currency || 'NGN'
+            // If order is already in USD, no conversion needed
+            if (orderCurrency === 'USD') {
+                totalUsd += amount
+            } else {
+                totalUsd += amount / rate
+            }
         }
 
-        // Add current order
-        totalUsd += currentOrderAmountNgn / rate
+        // Add current order (already divided by rate or rate=1 for USD)
+        totalUsd += currentOrderAmount / (fxRate && fxRate > 0 ? fxRate : rate)
 
         const flagged = totalUsd > VELOCITY_THRESHOLD_USD
 

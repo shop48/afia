@@ -253,6 +253,77 @@ export async function submitBiometricKyc(
 }
 
 // ══════════════════════════════════════════════
+// 2b. SUBMIT DOCUMENT VERIFICATION (International — passport/ID photo + selfie)
+// Covers 100+ countries via OCR + face match
+// ══════════════════════════════════════════════
+
+/**
+ * Submit a Document Verification request.
+ * For countries NOT covered by Enhanced KYC (i.e., non-African countries).
+ * User uploads a photo of their ID document + a live selfie.
+ * SmileID uses OCR to extract data and matches the selfie to the document photo.
+ */
+export async function submitDocumentVerification(
+    params: {
+        partnerId: string
+        userId: string
+        country: string          // ISO 3166-1 alpha-2 (e.g., 'GB', 'US', 'DE')
+        firstName?: string
+        lastName?: string
+        selfieImage: string      // Required — base64-encoded selfie
+        idDocumentFrontImage: string  // Required — base64-encoded front of ID/passport
+        idDocumentBackImage?: string  // Optional — base64-encoded back of ID
+    },
+    apiKey: string,
+    callbackUrl: string
+): Promise<SmileIdJobResponse> {
+    if (!params.selfieImage) {
+        throw new Error('Selfie image is required for Document Verification')
+    }
+    if (!params.idDocumentFrontImage) {
+        throw new Error('ID document front image is required for Document Verification')
+    }
+
+    const jobId = `AFIA-DOC-${params.userId.slice(0, 8)}-${Date.now()}`
+
+    const images: { image_type_id: number; image: string }[] = [
+        { image_type_id: 2, image: params.selfieImage },          // Selfie
+        { image_type_id: 0, image: params.idDocumentFrontImage }, // ID front
+    ]
+
+    if (params.idDocumentBackImage) {
+        images.push({ image_type_id: 1, image: params.idDocumentBackImage }) // ID back
+    }
+
+    const body: Record<string, unknown> = {
+        source_sdk: 'rest_api',
+        source_sdk_version: '1.0.0',
+        partner_params: {
+            job_id: jobId,
+            user_id: params.userId,
+            job_type: 6, // 6 = Document Verification
+        },
+        id_info: {
+            country: params.country,
+            first_name: params.firstName || '',
+            last_name: params.lastName || '',
+        },
+        images,
+        callback_url: callbackUrl,
+    }
+
+    const res = await smileIdFetch('/v1/upload', body, apiKey, params.partnerId)
+
+    if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(`SmileID Document Verification failed (${res.status}): ${errText}`)
+    }
+
+    const result = (await res.json()) as SmileIdJobResponse
+    return { ...result, smile_job_id: result.smile_job_id || jobId }
+}
+
+// ══════════════════════════════════════════════
 // 3. PARSE WEBHOOK CALLBACK
 // ══════════════════════════════════════════════
 

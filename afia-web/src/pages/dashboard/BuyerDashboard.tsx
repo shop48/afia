@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
 import AppShell from '../../components/layout/AppShell'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingBag, Package, Shield, TrendingUp, ChevronRight, Clock, Truck, CheckCircle, AlertTriangle } from 'lucide-react'
+import { ShoppingBag, Package, Shield, TrendingUp, ChevronRight, Clock, Truck, CheckCircle, AlertTriangle, Star } from 'lucide-react'
 import { Badge } from '../../components/ui'
 import { useOrders, getProduct, getEscrow, type Order } from '../../hooks/useOrders'
+import { formatCurrency } from '../../lib/currency'
 
 const STATUS_VARIANT: Record<string, string> = {
     PAID: 'pending',
@@ -23,11 +24,25 @@ const STATUS_ICON: Record<string, React.ReactNode> = {
     DISPUTED: <AlertTriangle className="w-3.5 h-3.5" />,
 }
 
+// Aggregate amounts by currency
+type CurrencyTotals = Record<string, number>
+
+function addToTotals(totals: CurrencyTotals, amount: number, currency: string) {
+    const cur = currency || 'NGN'
+    totals[cur] = (totals[cur] || 0) + amount
+}
+
+function formatMultiCurrency(totals: CurrencyTotals): string {
+    const entries = Object.entries(totals).filter(([, amt]) => amt > 0)
+    if (entries.length === 0) return formatCurrency(0, 'NGN')
+    return entries.map(([cur, amt]) => formatCurrency(amt, cur)).join(' + ')
+}
+
 function computeStats(orders: Order[]) {
     let activeOrders = 0
     let delivered = 0
-    let inEscrow = 0
-    let totalSpent = 0
+    const inEscrow: CurrencyTotals = {}
+    const totalSpent: CurrencyTotals = {}
 
     for (const o of orders) {
         if (['PAID', 'SHIPPED'].includes(o.status)) activeOrders++
@@ -35,10 +50,10 @@ function computeStats(orders: Order[]) {
 
         const escrow = getEscrow(o)
         if (escrow && escrow.status === 'LOCKED') {
-            inEscrow += escrow.gross_amount
+            addToTotals(inEscrow, escrow.gross_amount, o.currency)
         }
         if (o.status === 'COMPLETED') {
-            totalSpent += o.total_amount
+            addToTotals(totalSpent, o.total_amount, o.currency)
         }
     }
 
@@ -78,13 +93,31 @@ export default function BuyerDashboard() {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    {[
-                        { label: 'Active Orders', value: String(stats.activeOrders), icon: <ShoppingBag className="w-5 h-5" />, color: 'text-gold bg-gold/10' },
-                        { label: 'Delivered', value: String(stats.delivered), icon: <Package className="w-5 h-5" />, color: 'text-neoa-emerald bg-neoa-emerald/10' },
-                        { label: 'In Escrow', value: `₦${stats.inEscrow.toLocaleString()}`, icon: <Shield className="w-5 h-5" />, color: 'text-navy bg-navy/10' },
-                        { label: 'Total Spent', value: `₦${stats.totalSpent.toLocaleString()}`, icon: <TrendingUp className="w-5 h-5" />, color: 'text-gold-dark bg-gold/10' },
-                    ].map((stat, i) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                    {(() => {
+                        const trustScore = profile?.trust_score ?? 50
+                        const trustTier = trustScore <= 20 ? 'Flagged' : trustScore <= 50 ? 'Normal' : trustScore <= 80 ? 'Trusted' : 'Premium'
+                        const trustColor = trustScore <= 20 ? 'text-ruby bg-ruby/10' : trustScore <= 50 ? 'text-platinum-dark bg-platinum/20' : trustScore <= 80 ? 'text-neoa-emerald bg-neoa-emerald/10' : 'text-gold bg-gold/10'
+                        const ringColor = trustScore <= 20 ? 'stroke-ruby' : trustScore <= 50 ? 'stroke-platinum-dark' : trustScore <= 80 ? 'stroke-neoa-emerald' : 'stroke-gold'
+
+                        return [
+                            { label: 'Trust Score', value: `${trustScore}`, icon: <Star className="w-5 h-5" />, color: trustColor, extra: (
+                                <div className="flex items-center gap-2 mt-1">
+                                    <svg width="28" height="28" viewBox="0 0 36 36" className="-rotate-90">
+                                        <circle cx="18" cy="18" r="15" fill="none" strokeWidth="3" className="stroke-platinum-light" />
+                                        <circle cx="18" cy="18" r="15" fill="none" strokeWidth="3" className={ringColor}
+                                            strokeDasharray={`${trustScore * 0.9425} 94.25`}
+                                            strokeLinecap="round" />
+                                    </svg>
+                                    <span className={`text-[10px] font-bold uppercase ${trustColor.split(' ')[0]}`}>{trustTier}</span>
+                                </div>
+                            ) },
+                            { label: 'Active Orders', value: String(stats.activeOrders), icon: <ShoppingBag className="w-5 h-5" />, color: 'text-gold bg-gold/10' },
+                            { label: 'Delivered', value: String(stats.delivered), icon: <Package className="w-5 h-5" />, color: 'text-neoa-emerald bg-neoa-emerald/10' },
+                            { label: 'In Escrow', value: formatMultiCurrency(stats.inEscrow), icon: <Shield className="w-5 h-5" />, color: 'text-navy bg-navy/10' },
+                            { label: 'Total Spent', value: formatMultiCurrency(stats.totalSpent), icon: <TrendingUp className="w-5 h-5" />, color: 'text-gold-dark bg-gold/10' },
+                        ]
+                    })().map((stat, i) => (
                         <motion.div
                             key={stat.label}
                             initial={{ opacity: 0, y: 10 }}
@@ -97,6 +130,7 @@ export default function BuyerDashboard() {
                             </div>
                             <p className="text-2xl font-bold text-navy">{stat.value}</p>
                             <p className="text-xs text-platinum-dark mt-0.5">{stat.label}</p>
+                            {'extra' in stat && stat.extra}
                         </motion.div>
                     ))}
                 </div>
@@ -165,7 +199,7 @@ export default function BuyerDashboard() {
                                         {/* Amount + Arrow */}
                                         <div className="text-right flex-shrink-0 flex items-center gap-2">
                                             <span className="font-bold text-navy">
-                                                {order.currency} {order.total_amount.toLocaleString()}
+                                                {formatCurrency(order.total_amount, order.currency || 'NGN')}
                                             </span>
                                             <ChevronRight className="w-4 h-4 text-platinum-dark" />
                                         </div>

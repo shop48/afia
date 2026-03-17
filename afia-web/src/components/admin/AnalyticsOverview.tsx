@@ -7,7 +7,7 @@ import {
 import { apiClient } from '../../lib/api'
 
 // ═══════════════════════════════════════════════
-// MODULE 7.3: ANALYTICS OVERVIEW
+// MODULE 7.3: ANALYTICS OVERVIEW (LIGHT THEME)
 // Platform metrics dashboard
 // ═══════════════════════════════════════════════
 
@@ -58,7 +58,7 @@ export default function AnalyticsOverview() {
         return (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                    <div key={i} className="animate-pulse bg-white/5 rounded-2xl h-32 border border-white/10" />
+                    <div key={i} className="animate-pulse bg-platinum-light rounded-2xl h-32 border border-platinum" />
                 ))}
             </div>
         )
@@ -66,7 +66,7 @@ export default function AnalyticsOverview() {
 
     if (error) {
         return (
-            <div className="bg-ruby/10 border border-ruby/30 text-ruby rounded-xl p-4 text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-4 text-sm">
                 {error}
                 <button onClick={fetchAnalytics} className="ml-2 underline cursor-pointer">Retry</button>
             </div>
@@ -80,9 +80,9 @@ export default function AnalyticsOverview() {
             label: 'Total Escrowed',
             value: formatCurrency(data.total_escrowed),
             icon: DollarSign,
-            color: 'gold',
-            gradient: 'from-gold/15 to-gold/5',
+            gradient: 'from-gold/10 to-gold/5',
             border: 'border-gold/20',
+            iconBg: 'bg-gold/10',
             iconColor: 'text-gold',
             description: 'Currently locked in vault',
         },
@@ -90,72 +90,72 @@ export default function AnalyticsOverview() {
             label: 'Released This Week',
             value: formatCurrency(data.total_released_week),
             icon: TrendingUp,
-            color: 'emerald',
-            gradient: 'from-emerald-500/15 to-emerald-500/5',
-            border: 'border-emerald-500/20',
-            iconColor: 'text-emerald-400',
+            gradient: 'from-emerald-50 to-emerald-50/50',
+            border: 'border-emerald-200',
+            iconBg: 'bg-emerald-100',
+            iconColor: 'text-emerald-600',
             description: 'Funds released to vendors',
         },
         {
             label: 'Active Orders',
             value: data.active_orders.toLocaleString(),
             icon: Package,
-            color: 'blue',
-            gradient: 'from-blue-500/15 to-blue-500/5',
-            border: 'border-blue-500/20',
-            iconColor: 'text-blue-400',
+            gradient: 'from-blue-50 to-blue-50/50',
+            border: 'border-blue-200',
+            iconBg: 'bg-blue-100',
+            iconColor: 'text-blue-600',
             description: 'In-flight transactions',
         },
         {
             label: 'Dispute Rate',
             value: `${data.dispute_rate}%`,
             icon: AlertTriangle,
-            color: data.dispute_rate > 10 ? 'ruby' : 'amber',
             gradient: data.dispute_rate > 10
-                ? 'from-ruby/15 to-ruby/5'
-                : 'from-amber-500/15 to-amber-500/5',
-            border: data.dispute_rate > 10 ? 'border-ruby/20' : 'border-amber-500/20',
-            iconColor: data.dispute_rate > 10 ? 'text-ruby' : 'text-amber-400',
+                ? 'from-red-50 to-red-50/50'
+                : 'from-amber-50 to-amber-50/50',
+            border: data.dispute_rate > 10 ? 'border-red-200' : 'border-amber-200',
+            iconBg: data.dispute_rate > 10 ? 'bg-red-100' : 'bg-amber-100',
+            iconColor: data.dispute_rate > 10 ? 'text-red-600' : 'text-amber-600',
             description: `${data.disputed_orders} of ${data.total_orders} orders`,
         },
         {
             label: 'Total Vendors',
             value: data.total_vendors.toLocaleString(),
             icon: Users,
-            color: 'purple',
-            gradient: 'from-purple-500/15 to-purple-500/5',
-            border: 'border-purple-500/20',
-            iconColor: 'text-purple-400',
+            gradient: 'from-purple-50 to-purple-50/50',
+            border: 'border-purple-200',
+            iconBg: 'bg-purple-100',
+            iconColor: 'text-purple-600',
             description: 'Registered sellers',
         },
         {
             label: 'Total Orders',
             value: data.total_orders.toLocaleString(),
             icon: Shield,
-            color: 'cyan',
-            gradient: 'from-cyan-500/15 to-cyan-500/5',
-            border: 'border-cyan-500/20',
-            iconColor: 'text-cyan-400',
+            gradient: 'from-cyan-50 to-cyan-50/50',
+            border: 'border-cyan-200',
+            iconBg: 'bg-cyan-100',
+            iconColor: 'text-cyan-600',
             description: 'Lifetime transactions',
         },
         {
             label: 'Pending Payouts',
             value: data.pending_payouts.toLocaleString(),
             icon: Clock,
-            color: 'orange',
-            gradient: 'from-orange-500/15 to-orange-500/5',
-            border: 'border-orange-500/20',
-            iconColor: 'text-orange-400',
+            gradient: 'from-orange-50 to-orange-50/50',
+            border: 'border-orange-200',
+            iconBg: 'bg-orange-100',
+            iconColor: 'text-orange-600',
             description: 'Awaiting Friday batch',
         },
         {
             label: 'Disputed Orders',
             value: data.disputed_orders.toLocaleString(),
             icon: AlertTriangle,
-            color: 'rose',
-            gradient: 'from-rose-500/15 to-rose-500/5',
-            border: 'border-rose-500/20',
-            iconColor: 'text-rose-400',
+            gradient: 'from-rose-50 to-rose-50/50',
+            border: 'border-rose-200',
+            iconBg: 'bg-rose-100',
+            iconColor: 'text-rose-600',
             description: 'Need arbitration',
         },
     ]
@@ -164,7 +164,7 @@ export default function AnalyticsOverview() {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h2 className="text-2xl font-bold text-gold font-[family-name:var(--font-heading)]">
+                <h2 className="text-2xl font-bold text-navy font-[family-name:var(--font-heading)]">
                     Analytics Overview
                 </h2>
                 <p className="text-sm text-platinum-dark mt-1">
@@ -182,16 +182,16 @@ export default function AnalyticsOverview() {
                         initial="hidden"
                         animate="visible"
                         className={`bg-gradient-to-br ${metric.gradient} border ${metric.border} 
-              rounded-2xl p-5 hover:scale-[1.02] transition-transform cursor-default`}
+              rounded-2xl p-5 hover:scale-[1.02] hover:shadow-md transition-all cursor-default`}
                     >
                         <div className="flex items-center justify-between mb-3">
-                            <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center`}>
+                            <div className={`w-10 h-10 rounded-xl ${metric.iconBg} flex items-center justify-center`}>
                                 <metric.icon className={`w-5 h-5 ${metric.iconColor}`} />
                             </div>
-                            <ArrowUpRight className="w-4 h-4 text-white/20" />
+                            <ArrowUpRight className="w-4 h-4 text-platinum-dark/40" />
                         </div>
-                        <p className="text-2xl font-bold text-white mb-1">{metric.value}</p>
-                        <p className="text-xs font-medium text-platinum uppercase tracking-wider">{metric.label}</p>
+                        <p className="text-2xl font-bold text-navy mb-1">{metric.value}</p>
+                        <p className="text-xs font-medium text-platinum-dark uppercase tracking-wider">{metric.label}</p>
                         <p className="text-xs text-platinum-dark mt-1">{metric.description}</p>
                     </motion.div>
                 ))}

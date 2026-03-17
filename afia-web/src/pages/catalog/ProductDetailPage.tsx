@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useProducts, type Product } from '../../hooks/useProducts'
 import { useAuth } from '../../contexts/AuthContext'
-import { formatCurrency, getConvertedDisplay } from '../../lib/currency'
+import { formatCurrency } from '../../lib/currency'
 import { Badge, Skeleton } from '../../components/ui'
 import {
     ShieldCheck, BadgeCheck, ArrowLeft, Package,
@@ -191,18 +191,8 @@ export default function ProductDetailPage() {
                             <p className="text-3xl font-bold text-navy">
                                 {formatCurrency(product.base_price, product.currency)}
                             </p>
-                            {product.currency !== 'USD' && (
-                                <p className="text-sm text-platinum-dark mt-1">
-                                    {getConvertedDisplay(product.base_price, product.currency, 'USD')}
-                                </p>
-                            )}
-                            {product.currency === 'USD' && (
-                                <p className="text-sm text-platinum-dark mt-1">
-                                    {getConvertedDisplay(product.base_price, product.currency, 'NGN')}
-                                </p>
-                            )}
                             <p className="text-[11px] text-platinum-dark mt-2">
-                                Includes 3% FX volatility buffer for your protection
+                                Escrow-protected • 15% platform fee for buyer protection
                             </p>
                         </div>
 

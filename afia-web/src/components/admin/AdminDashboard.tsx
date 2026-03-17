@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import PayoutQueue from './PayoutQueue'
 import DisputeArbitration from './DisputeArbitration'
 import VendorManagement from './VendorManagement'
+import BuyerManagement from './BuyerManagement'
 import AnalyticsOverview from './AnalyticsOverview'
 import AuditLog from './AuditLog'
 import AppShell from '../layout/AppShell'
@@ -10,18 +11,13 @@ import { useAuth } from '../../contexts/AuthContext'
 
 // ═══════════════════════════════════════════════
 // MODULE 7: ADMIN DASHBOARD (GOD MODE)
-// 5-section hub: Payouts, Disputes, Vendors,
-// Analytics, Audit Log
+// 6-section hub: Payouts, Disputes, Vendors,
+// Buyers, Analytics, Audit Log
 // ═══════════════════════════════════════════════
-
-// Components that use DARK theming (text-white, bg-navy-light, etc.)
-const DARK_THEMED_ROUTES = ['/admin', '/admin/vendors', '/admin/analytics', '/admin/audit-log']
 
 export default function AdminDashboard() {
     const { profile, role, signOut } = useAuth()
     const [activePath, setActivePath] = useState('/admin')
-
-    const isDarkTheme = DARK_THEMED_ROUTES.includes(activePath)
 
     const renderContent = () => {
         switch (activePath) {
@@ -29,6 +25,8 @@ export default function AdminDashboard() {
                 return <DisputeArbitration />
             case '/admin/vendors':
                 return <VendorManagement />
+            case '/admin/buyers':
+                return <BuyerManagement />
             case '/admin/analytics':
                 return <AnalyticsOverview />
             case '/admin/audit-log':
@@ -46,24 +44,13 @@ export default function AdminDashboard() {
             userName={profile?.full_name || 'Admin'}
             onLogout={signOut}
         >
-            {isDarkTheme ? (
-                <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="-m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen bg-gradient-to-br from-navy-dark to-navy"
-                >
-                    {renderContent()}
-                </motion.div>
-            ) : (
-                <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                >
-                    {renderContent()}
-                </motion.div>
-            )}
+            <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+            >
+                {renderContent()}
+            </motion.div>
         </AppShell>
     )
 }

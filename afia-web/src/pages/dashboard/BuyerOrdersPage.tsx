@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { ShoppingBag, Package, ChevronRight, Clock, Truck, CheckCircle, AlertTriangle } from 'lucide-react'
 import { Badge } from '../../components/ui'
 import { useOrders, getProduct, getEscrow } from '../../hooks/useOrders'
+import { formatCurrency } from '../../lib/currency'
 import { useState } from 'react'
 
 const STATUS_VARIANT: Record<string, string> = {
@@ -163,7 +164,7 @@ export default function BuyerOrdersPage() {
                                         {/* Amount + Arrow */}
                                         <div className="text-right flex-shrink-0 flex items-center gap-2">
                                             <span className="font-bold text-navy">
-                                                {order.currency} {order.total_amount.toLocaleString()}
+                                                {formatCurrency(order.total_amount, order.currency || 'NGN')}
                                             </span>
                                             <ChevronRight className="w-4 h-4 text-platinum-dark" />
                                         </div>

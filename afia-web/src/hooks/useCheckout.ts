@@ -11,9 +11,10 @@ export interface CheckoutData {
     authorization_url: string
     access_code: string
     reference: string
-    amount_ngn: number
-    amount_kobo: number
-    fx_rate: number | null
+    amount: number             // total in the product's currency (e.g. 200 for $200)
+    amount_subunit: number     // amount × 100 (cents/kobo)
+    currency: string           // ISO 4217: 'NGN', 'USD', etc.
+    fx_rate_snapshot: number | null  // FX rate snapshot for audit (not used for pricing)
     idempotency_key: string
     product: {
         id: string
@@ -119,9 +120,9 @@ export function useCheckout() {
             openPaystackPopup({
                 key: PAYSTACK_PUBLIC_KEY,
                 email: user?.email || '',
-                amount: data.amount_kobo,
+                amount: data.amount_subunit,
                 ref: data.reference,
-                currency: 'NGN',
+                currency: data.currency || 'NGN',
                 callback: (response) => {
                     setLoading(false)
                     onSuccess(response.reference)

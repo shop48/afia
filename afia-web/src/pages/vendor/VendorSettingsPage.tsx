@@ -211,11 +211,11 @@ export default function VendorSettingsPage() {
                                 <ul className="text-xs text-platinum-dark space-y-1 mb-4">
                                     <li className="flex items-center gap-2">
                                         <ChevronRight className="w-3 h-3 text-gold" />
-                                        <span>Accepts BVN, NIN, Voter's Card, Driver's License, or Passport</span>
+                                        <span>🇳🇬 Nigerian vendors: BVN, NIN, Voter's Card, or Passport</span>
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <ChevronRight className="w-3 h-3 text-gold" />
-                                        <span>Optional selfie for faster verification</span>
+                                        <span>🌍 International vendors: ID document upload + selfie</span>
                                     </li>
                                     <li className="flex items-center gap-2">
                                         <ChevronRight className="w-3 h-3 text-gold" />
@@ -280,7 +280,7 @@ export default function VendorSettingsPage() {
                             </div>
                             <div className="flex items-start gap-2">
                                 <ChevronRight className="w-3 h-3 text-gold shrink-0 mt-0.5" />
-                                <span>Platform fee: 15% covers escrow security, FX hedging, and dispute resolution.</span>
+                                <span>Platform fee: 15% covers escrow security, buyer protection, and dispute resolution.</span>
                             </div>
                         </div>
                     </motion.div>
