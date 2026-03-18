@@ -1,337 +1,372 @@
-Test_ID,Module,Category,Test_Name,User_Role,Login_Email,Login_Password,Preconditions,Steps,Expected_Result,Payment_Notes,Status,Tester_Notes,Severity
-T001,Module 2 - Auth,Authentication,Fresh Signup - Buyer,NEW_USER,--,--,None,"1. Go to https://neoa-web.pages.dev/signup
+Test_ID,Module,Category,Test_Name,User_Role,Login_Email,Login_Password,Preconditions,Steps,Expected_Result,Payment_Notes,Status,Tester_Notes,Tester_Experience,Improvement_Suggestions,Severity
+,,,,,,,,,,,,,,
+===== SECTION 1: AUTHENTICATION & ACCESS CONTROL =====,Module 2 - Auth,,,,,,,,,,,,
+T001,Module 2 - Auth,Signup,Fresh Signup - Buyer,NEW_USER,--,--,None,"1. Go to https://neoa-web.pages.dev/signup
 2. Enter Full Name: 'QA Buyer Fresh'
 3. Enter Email: use a REAL email you can access
 4. Enter Password: TestQA2026!
 5. Confirm Password: TestQA2026!
 6. Select 'Buyer' account type
-7. Click 'Create Account'","Signup form submits. Shows confirmation message / redirects to verify-email. Check inbox for confirmation email from Supabase.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T002,Module 2 - Auth,Authentication,Fresh Signup - Vendor,NEW_USER,--,--,None,"1. Go to https://neoa-web.pages.dev/signup
-2. Enter Full Name: 'QA Vendor Fresh'
+7. Click 'Create Account'","Signup form submits. Shows confirmation message / redirects to verify-email page. Check inbox for confirmation email from Supabase.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T002,Module 2 - Auth,Signup,Fresh Signup - Vendor,NEW_USER,--,--,None,"1. Go to https://neoa-web.pages.dev/signup
+2. Enter Full Name: 'QA Vendor New'
 3. Enter Email: use a DIFFERENT real email
 4. Enter Password: TestQA2026!
 5. Select 'Vendor' account type
-6. Click 'Create Account'","Signup form submits. Vendor role assigned in Supabase profile.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T003,Module 2 - Auth,Authentication,Login - Buyer Account,BUYER,testbuyer@afia.com,NeoaTest2026!,Account exists and is confirmed,"1. Go to https://neoa-web.pages.dev/login
+6. Click 'Create Account'","Signup form submits. Vendor role assigned in Supabase profile. Shows verify-email page.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T003,Module 2 - Auth,Login,Login - Buyer Account (Test Buyer),BUYER,testbuyer@afia.com,NeoaTest2026!,Account exists and is confirmed,"1. Go to https://neoa-web.pages.dev/login
 2. Enter email: testbuyer@afia.com
 3. Enter password: NeoaTest2026!
-4. Click 'Sign In'","Redirects to /dashboard (Buyer Dashboard). Shows user's name 'Test Buyer' in sidebar. Shows orders section.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T004,Module 2 - Auth,Authentication,Login - Vendor Account,VENDOR,testvendor@afia.com,NeoaTest2026!,Account exists and is confirmed,"1. Go to https://neoa-web.pages.dev/login
-2. Enter email: testvendor@afia.com
-3. Enter password: NeoaTest2026!
-4. Click 'Sign In'","Redirects to /vendor (Vendor Dashboard). Shows 'Test Vendor' in sidebar. Sidebar shows: Dashboard / Products / Orders / Settings.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T005,Module 2 - Auth,Authentication,Login - Super Admin,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Account exists and is confirmed,"1. Go to https://neoa-web.pages.dev/login
-2. Enter email: testadmin@afia.com
-3. Enter password: NeoaAdmin2026!
-4. Click 'Sign In'","Redirects to /admin (Admin Dashboard / God Mode). Shows analytics overview cards and admin sidebar navigation.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T006,Module 2 - Auth,Authentication,Login - Second Buyer,BUYER,testuser@neoa.com,NeoaTest2026!,Account exists and is confirmed,"1. Go to https://neoa-web.pages.dev/login
+4. Click 'Sign In'","Redirects to /dashboard (Buyer Dashboard). Shows 'Test Buyer' in sidebar. Shows orders section with seeded orders.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T004,Module 2 - Auth,Login,Login - Second Buyer (Test User),BUYER,testuser@neoa.com,NeoaTest2026!,Account exists and is confirmed,"1. Go to https://neoa-web.pages.dev/login
 2. Enter email: testuser@neoa.com
 3. Enter password: NeoaTest2026!
-4. Click 'Sign In'","Redirects to /dashboard (Buyer Dashboard). Shows 'Test User' in sidebar.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T007,Module 2 - Auth,Authentication,Login - Wrong Password,ANY,testbuyer@afia.com,wrongpassword123,None,"1. Go to /login
+4. Click 'Sign In'","Redirects to /dashboard (Buyer Dashboard). Shows 'Test User' in sidebar.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T005,Module 2 - Auth,Login,Login - Vendor Account (Test Vendor / NG),VENDOR,testvendor@afia.com,NeoaTest2026!,Account exists and is confirmed,"1. Go to https://neoa-web.pages.dev/login
+2. Enter email: testvendor@afia.com
+3. Enter password: NeoaTest2026!
+4. Click 'Sign In'","Redirects to /vendor (Vendor Dashboard). Shows 'Test Vendor' in sidebar. Sidebar: Dashboard / Products / Orders / Settings. KYC status = VERIFIED.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T006,Module 2 - Auth,Login,Login - International Vendor (US),VENDOR,ogeemofficial@gmail.com,NeoaTest2026!,Account exists and is confirmed,"1. Go to https://neoa-web.pages.dev/login
+2. Enter email: ogeemofficial@gmail.com
+3. Enter password: NeoaTest2026!
+4. Click 'Sign In'","Redirects to /vendor. Shows 'International Vendor' in sidebar. KYC = VERIFIED. Settlement currency = USD.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T007,Module 2 - Auth,Login,Login - Unverified Vendor (QA Fresh),VENDOR,beloved.johnchidi@gmail.com,NeoaTest2026!,Account exists. KYC = NONE,"1. Go to https://neoa-web.pages.dev/login
+2. Enter email: beloved.johnchidi@gmail.com
+3. Enter password: NeoaTest2026!
+4. Click 'Sign In'","Redirects to /vendor. KYC = NONE. Cannot add products (KYC gate blocks).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T008,Module 2 - Auth,Login,Login - Super Admin,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Account exists and is confirmed,"1. Go to https://neoa-web.pages.dev/login
+2. Enter email: testadmin@afia.com
+3. Enter password: NeoaAdmin2026!
+4. Click 'Sign In'","Redirects to /admin (Admin Dashboard / God Mode). Shows analytics cards and admin sidebar.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T009,Module 2 - Auth,Login,Login - Wrong Password,ANY,testbuyer@afia.com,wrongpassword123,None,"1. Go to /login
 2. Enter email: testbuyer@afia.com
 3. Enter password: wrongpassword123
-4. Click 'Sign In'","Shows 'Invalid login credentials' error. Does NOT redirect. Form stays on login page.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T008,Module 2 - Auth,Authentication,Login - Nonexistent Email,ANY,nobody@nonexistent.com,AnyPassword123!,None,"1. Go to /login
-2. Enter email: nobody@nonexistent.com
-3. Enter password: AnyPassword123!
-4. Click 'Sign In'","Shows error message. Does NOT crash.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T009,Module 2 - Auth,Authentication,Forgot Password Flow,ANY,testbuyer@afia.com,--,None,"1. Go to /login
+4. Click 'Sign In'","Shows 'Invalid login credentials' error. Does NOT redirect. Stays on login.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T010,Module 2 - Auth,Login,Login - Nonexistent Email,ANY,nobody@nonexistent.com,AnyPassword123!,None,"1. Go to /login
+2. Enter: nobody@nonexistent.com / AnyPassword123!
+3. Click 'Sign In'","Shows error message. Does NOT crash or show blank screen.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T011,Module 2 - Auth,Password,Forgot Password Flow,ANY,testbuyer@afia.com,--,None,"1. Go to /login
 2. Click 'Forgot password?' link
 3. Enter email: testbuyer@afia.com
-4. Click 'Send Reset Link'","Shows confirmation that reset email was sent. Page: /forgot-password.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T010,Module 2 - Auth,Authentication,Logout,BUYER,testbuyer@afia.com,NeoaTest2026!,Must be logged in,"1. Login as buyer successfully
+4. Click 'Send Reset Link'","Shows confirmation that reset email was sent. Page: /forgot-password.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T012,Module 2 - Auth,Session,Logout,BUYER,testbuyer@afia.com,NeoaTest2026!,Must be logged in,"1. Login as buyer
 2. Click avatar/name in sidebar
-3. Click 'Logout'","Session cleared. Redirects to /login. Cannot access /dashboard without logging in again.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T011,Module 2 - Auth,Route Protection,Protected Route - No Auth,GUEST,--,--,Must NOT be logged in,"1. Open a new incognito window
-2. Visit https://neoa-web.pages.dev/dashboard directly","Should redirect to /login page. Dashboard is NOT accessible without auth.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T012,Module 2 - Auth,Route Protection,Buyer Cannot Access Admin,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in as buyer,"1. Login as buyer
-2. Manually type https://neoa-web.pages.dev/admin in URL bar
-3. Press Enter","Should NOT show admin panel. Should redirect to /dashboard or show access denied.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T013,Module 2 - Auth,Route Protection,Buyer Cannot Access Vendor Pages,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in as buyer,"1. Login as buyer
-2. Visit /vendor/products directly","Should NOT show vendor products page. Should redirect to buyer dashboard.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T014,Module 2 - Auth,Route Protection,Vendor Cannot Access Admin,VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as vendor,"1. Login as vendor
-2. Visit /admin directly","Should NOT show admin panel.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T015,Module 3 - Catalog,Product Browsing,View Catalog - Public,GUEST,--,--,At least 1 product in DB,"1. Visit https://neoa-web.pages.dev/catalog (no login needed)
-2. Observe product grid","Should show product(s) including 'Nike Air Max 90' at $150 USD. Page loads without errors. Shows: product image / title / price / escrow badge.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T016,Module 3 - Catalog,Product Browsing,Product Detail Page,GUEST,--,--,At least 1 product in DB,"1. Go to /catalog
+3. Click 'Logout'","Session cleared. Redirects to /login. Cannot access /dashboard without re-login.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T013,Module 2 - Auth,Route Protection,Protected Route - No Auth,GUEST,--,--,Must NOT be logged in,"1. Open incognito window
+2. Visit https://neoa-web.pages.dev/dashboard directly","Redirects to /login. Dashboard not accessible without auth.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T014,Module 2 - Auth,Route Protection,Buyer Cannot Access Admin,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in as buyer,"1. Login as buyer
+2. Type https://neoa-web.pages.dev/admin in URL
+3. Press Enter","Does NOT show admin panel. Redirects to /dashboard or shows access denied.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T015,Module 2 - Auth,Route Protection,Buyer Cannot Access Vendor Pages,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in as buyer,"1. Login as buyer
+2. Visit /vendor/products directly","Does NOT show vendor page. Redirects to buyer dashboard.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T016,Module 2 - Auth,Route Protection,Vendor Cannot Access Admin,VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as vendor,"1. Login as vendor
+2. Visit /admin directly","Does NOT show admin panel. Redirects or shows access denied.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+,,,,,,,,,,,,,,
+===== SECTION 2: PRODUCT CATALOG & BROWSING =====,Module 3 - Catalog,,,,,,,,,,,,
+T017,Module 3 - Catalog,Browsing,View Catalog - Public (No Login),GUEST,--,--,Products seeded in DB,"1. Visit https://neoa-web.pages.dev/catalog (no login)
+2. Observe product grid","Shows 6 products: Nike Air Max 90 ($150) / Galaxy Buds Pro ($89.99) / Leather Wallet ($35) / Ankara Fabric ($25) / MacBook Charger ($79) / Shea Butter ($18.50). Each card shows: image / title / price / escrow badge.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T018,Module 3 - Catalog,Browsing,Product Detail Page,GUEST,--,--,Products exist,"1. Go to /catalog
 2. Click on 'Nike Air Max 90'
-3. Observe product detail page","Should show full product info: title / description / price / stock / category / 'Buy Now' button (if logged in as buyer). Show escrow protection badge.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T017,Module 3 - Catalog,Product Browsing,Search Products,GUEST,--,--,Products exist,"1. Go to /catalog
-2. Use search bar — type 'Nike'","Should filter products matching 'Nike'. If search not implemented yet note as improvement area.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T018,Module 3 - Catalog,Product Browsing,Category Filter,GUEST,--,--,Products exist,"1. Go to /catalog
-2. Try category filter buttons (Electronics / Fashion etc.)","Should filter products by category. If categories not populated yet note this.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T019,Module 4 - Vendor,Vendor Dashboard,Vendor Dashboard Overview,VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as vendor,"1. Login as vendor
-2. View vendor dashboard at /vendor","Should show dashboard with: revenue summary / order stats / recent orders. Sidebar shows: Dashboard / Products / Orders / Settings.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T020,Module 4 - Vendor,Product Management,View Products List,VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as vendor,"1. Navigate to /vendor/products
-2. View product grid","Should show 'My Products' heading with count. Should list 'Nike Air Max 90'. Each card shows: image / title / price / stock / status / action menu (edit/view/delete).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T021,Module 4 - Vendor,Product Management,Add New Product,VENDOR,testvendor@afia.com,NeoaTest2026!,"Logged in as vendor. KYC = VERIFIED (already set).","1. Go to /vendor/products
-2. Click 'Add Product' button (gold button with + icon)
-3. Modal should open with form fields
-4. Fill in: Title = 'Premium Ankara Fabric' / Description = 'Beautiful handwoven Nigerian fabric for all occasions' / Price = 75 / Currency = USD / Stock = 20 / Category = Fashion
-5. Click Save/Create","Product form modal appears. On save: success toast shown. New product appears in product grid. ALSO verify: go to /catalog and new product is visible.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T022,Module 4 - Vendor,Product Management,Edit Existing Product,VENDOR,testvendor@afia.com,NeoaTest2026!,At least 1 product exists,"1. Go to /vendor/products
-2. Hover over a product card → click the three-dot (⋮) menu
+3. Observe product detail page","Shows: title / description / price ($150 USD) / stock (15) / category (Fashion) / vendor info / 'Buy Now' button (if logged in). Escrow protection badge visible.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T019,Module 3 - Catalog,Browsing,Search Products,GUEST,--,--,Products exist,"1. Go to /catalog
+2. Type 'Samsung' in search bar","Filters to show Samsung Galaxy Buds Pro. Other products hidden. If search not implemented: note as improvement.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T020,Module 3 - Catalog,Browsing,Category Filter,GUEST,--,--,Products exist,"1. Go to /catalog
+2. Click 'Electronics' filter","Shows only: Samsung Galaxy Buds Pro + MacBook Charger. Fashion items hidden.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T021,Module 3 - Catalog,Browsing,View International Vendor Products,GUEST,--,--,Intl vendor products exist,"1. Go to /catalog
+2. Find 'MacBook Pro Charger (96W)' and 'Organic Shea Butter (500g)'","Both products from International Vendor are visible alongside Test Vendor products. No distinction in catalog view.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+,,,,,,,,,,,,,,
+===== SECTION 3: VENDOR MANAGEMENT =====,Module 4 - Vendor,,,,,,,,,,,,
+T022,Module 4 - Vendor,Dashboard,Vendor Dashboard Overview,VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as vendor,"1. Login as Test Vendor
+2. View vendor dashboard at /vendor","Shows: revenue summary / order stats / recent orders. Has 8 orders (PAID/SHIPPED/DELIVERED/DISPUTED/COMPLETED). Sidebar: Dashboard / Products / Orders / Settings.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T023,Module 4 - Vendor,Products,View Products List,VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as vendor,"1. Navigate to /vendor/products
+2. View product grid","Shows 'My Products' with 4 products: Nike Air Max 90 / Galaxy Buds Pro / Leather Wallet / Ankara Fabric. Each card: image / title / price / stock / status / action menu.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T024,Module 4 - Vendor,Products,Add New Product,VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as verified vendor (KYC=VERIFIED),"1. Go to /vendor/products
+2. Click 'Add Product' (gold button)
+3. Fill: Title='Premium Ankara Bundle' / Description='Beautiful set of 3 Ankara fabrics' / Price=75 / Currency=USD / Stock=20 / Category=Fashion & Apparel
+4. Click Save","Modal opens with form. On save: success toast. New product appears in grid. Also verify: new product visible on /catalog.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T025,Module 4 - Vendor,Products,Edit Existing Product,VENDOR,testvendor@afia.com,NeoaTest2026!,At least 1 product exists,"1. Go to /vendor/products
+2. Hover product card → click ⋮ menu
 3. Click 'Edit'
-4. Change price from $150 to $165
-5. Save","Product modal opens pre-filled. After save: toast shown. Product list refreshes with updated price. ALSO verify price on /catalog.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T023,Module 4 - Vendor,Product Management,Delete Product,VENDOR,testvendor@afia.com,NeoaTest2026!,At least 2 products exist (create one first),"1. Go to /vendor/products
-2. Hover → click ⋮ on a product
-3. Click 'Delete'
-4. Confirm in the dialog","Confirmation dialog appears. On confirm: product removed from grid. Success toast. Product no longer visible on /catalog. (Tip: delete the test product not the main one)",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T024,Module 4 - Vendor,Product Management,Add Product with Images,VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as verified vendor,"1. Click 'Add Product'
-2. Fill in product details
-3. Try uploading an image file
-4. Save","Image uploads and shows as product thumbnail. Visible on catalog too.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T025,Module 4 - Vendor,Product Management,KYC Gate - Unverified Vendor,VENDOR,-- (new vendor from T002),TestQA2026!,"Logged in as unverified vendor (KYC = NONE).","1. Login with the new vendor from T002
+4. Change price of Nike Air Max from $150 to $165
+5. Save","Modal opens pre-filled. After save: toast shown. Price updated in list. Verify on /catalog too.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T026,Module 4 - Vendor,Products,Delete Product,VENDOR,testvendor@afia.com,NeoaTest2026!,Product from T024 exists,"1. Go to /vendor/products
+2. Find 'Premium Ankara Bundle' (created in T024)
+3. Click ⋮ → Delete
+4. Confirm deletion","Confirmation dialog appears. Product removed from grid. Success toast. Gone from /catalog too.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T027,Module 4 - Vendor,Products,KYC Gate - Unverified Vendor,VENDOR,beloved.johnchidi@gmail.com,NeoaTest2026!,KYC = NONE,"1. Login as QA Vendor Fresh
 2. Go to /vendor/products
-3. Observe the page","Should show 'Identity Verification Required' banner INSTEAD of 'Add Product' button. Must complete KYC before listing.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T026,Module 5 - Checkout,Checkout Flow,Buy Now → Checkout Page,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in as buyer. Product exists.,"1. Login as buyer
+3. Observe the page","Shows 'Identity Verification Required' banner INSTEAD of 'Add Product' button. Must complete KYC first.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T028,Module 4 - Vendor,Products,Add Product with Image Upload,VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as verified vendor,"1. Click 'Add Product'
+2. Fill product details
+3. Try uploading an image file
+4. Save","Image uploads. Shows as product thumbnail. Visible on catalog.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T029,Module 4 - Vendor,Orders,View Incoming Orders,VENDOR,testvendor@afia.com,NeoaTest2026!,Orders exist in various states,"1. Login as Test Vendor
+2. Go to /vendor/orders","Shows 8 orders: 2 PAID / 2 SHIPPED / 1 DELIVERED / 2 DISPUTED / 1 COMPLETED. Each shows: buyer info / product / amount / status badge / action buttons.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T030,Module 4 - Vendor,Orders,International Vendor - View Orders,VENDOR,ogeemofficial@gmail.com,NeoaTest2026!,Intl vendor orders exist,"1. Login as International Vendor
+2. Go to /vendor/orders","Shows 2 orders: 1 DELIVERED ($79 MacBook Charger) / 1 COMPLETED ($18.50 Shea Butter).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+,,,,,,,,,,,,,,
+===== SECTION 4: CHECKOUT & PAYMENT =====,Module 5 - Checkout,,,,,,,,,,,,
+T031,Module 5 - Checkout,Checkout,Buy Now → Checkout Page,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in. Products exist.,"1. Login as buyer
 2. Go to /catalog
-3. Click on a product
-4. Click 'Buy Now'","Should navigate to checkout page (/checkout/:productId). Shows: product details / quantity / price breakdown / 'Pay with Paystack' button.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T027,Module 5 - Checkout,Checkout Flow,Paystack Payment (Test Card),BUYER,testbuyer@afia.com,NeoaTest2026!,"On checkout page. Paystack key must be real test key (not placeholder).","1. At checkout page click 'Pay with Paystack'
+3. Click 'Samsung Galaxy Buds Pro'
+4. Click 'Buy Now'","Navigates to checkout page (/checkout/:productId). Shows: product details / quantity / price breakdown / 'Pay with Paystack' button.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T032,Module 5 - Checkout,Payment,Paystack Payment (Test Card),BUYER,testbuyer@afia.com,NeoaTest2026!,On checkout page. Real Paystack test key.,"1. On checkout page click 'Pay with Paystack'
 2. Paystack popup opens
 3. Use test card: 4084 0840 8408 4081
 4. Expiry: 12/30 / CVV: 408
 5. OTP: 123456 (if prompted)
-6. Complete payment","Returns to confirmation page. Order status = PAID. Escrow entry created (LOCKED). Stock decremented. Buyer sees order in /dashboard.","MOCK: If Paystack key is 'sk_test_placeholder' → popup will fail. Note this as BLOCKED.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T028,Module 5 - Checkout,Order Management,Buyer - View Orders List,BUYER,testbuyer@afia.com,NeoaTest2026!,At least 1 order exists,"1. Login as buyer
+6. Complete payment","Returns to confirmation. Order status = PAID. Escrow created (LOCKED). Stock decremented. Order visible in buyer /dashboard.","If Paystack key is placeholder → popup fails. Note BLOCKED.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T033,Module 5 - Checkout,Orders,Buyer - View Orders List,BUYER,testbuyer@afia.com,NeoaTest2026!,Seeded orders exist,"1. Login as buyer (testbuyer@afia.com)
 2. Go to /dashboard
-3. View orders section","Should show order cards with status badges (PAID / SHIPPED / DELIVERED / COMPLETED). Shows product title / amount / date.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T029,Module 5 - Checkout,Order Management,Buyer - View Order Detail,BUYER,testbuyer@afia.com,NeoaTest2026!,At least 1 order exists,"1. Login as buyer
-2. Click on an order in dashboard
-3. View order detail page","Shows: product info / order timeline / current status / tracking info (if shipped) / dispute button (if applicable).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T030,Module 5 - Checkout,Order Management,Vendor - View Incoming Orders,VENDOR,testvendor@afia.com,NeoaTest2026!,At least 1 order exists,"1. Login as vendor
+3. View orders section","Shows order cards: Nike Air Max (PAID) / Leather Wallet (SHIPPED) / Galaxy Buds (DELIVERED) / Nike Air Max (DISPUTED) / MacBook Charger (DELIVERED). Status badges colored.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T034,Module 5 - Checkout,Orders,Buyer - View Order Detail,BUYER,testbuyer@afia.com,NeoaTest2026!,Orders exist,"1. Click on the SHIPPED order (Leather Wallet / TRK-DHL-98765)
+2. View order detail page","Shows: product info / order timeline / SHIPPED status / tracking ID (TRK-DHL-98765) / 'Confirm Delivery' button.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T035,Module 5 - Checkout,Orders,Second Buyer - View Orders,BUYER,testuser@neoa.com,NeoaTest2026!,Test User orders exist,"1. Login as Test User
+2. View orders in /dashboard","Shows: Galaxy Buds (PAID) / Ankara Fabric (SHIPPED) / Leather Wallet (DISPUTED) / Shea Butter (COMPLETED).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+,,,,,,,,,,,,,,
+===== SECTION 5: FULFILLMENT & SHIPPING =====,Module 5 - Fulfillment,,,,,,,,,,,,
+T036,Module 5 - Fulfillment,Shipping,Vendor - Ship via API Tracking (Rail 1),VENDOR,testvendor@afia.com,NeoaTest2026!,"PAID order exists (Nike Air Max for Test Buyer, PSK_PAID_001)","1. Login as vendor
 2. Go to /vendor/orders
-3. View order list","Should show incoming orders from buyers. Each order shows: buyer info / product / amount / status / action buttons.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T031,Module 5 - Checkout,Fulfillment,Vendor - Ship via API Tracking (Rail 1),VENDOR,testvendor@afia.com,NeoaTest2026!,Order in PAID status,"1. Login as vendor
-2. Go to /vendor/orders
-3. Find a PAID order
+3. Find the Nike Air Max PAID order ($150)
 4. Click 'Ship' / 'Fulfill'
 5. Select 'API Tracking'
-6. Enter: Tracking ID = 'TRK-TEST-001' / Carrier = 'DHL'
-7. Confirm shipment","Order status → SHIPPED. Tracking info saved. Buyer notification sent. Buyer can see tracking on order detail.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T032,Module 5 - Checkout,Fulfillment,Vendor - Ship via Manual Waybill (Rail 2),VENDOR,testvendor@afia.com,NeoaTest2026!,Order in PAID status,"1. Login as vendor
-2. Find a PAID order
+6. Enter: Tracking ID='TRK-TEST-NEW-001' / Carrier='DHL'
+7. Confirm","Order status → SHIPPED. Tracking info saved. Buyer sees tracking on order detail. Notification sent to buyer.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T037,Module 5 - Fulfillment,Shipping,Vendor - Ship via Manual Waybill (Rail 2),VENDOR,testvendor@afia.com,NeoaTest2026!,"PAID order exists (Galaxy Buds for Test User, PSK_PAID_002)","1. Login as vendor
+2. Find Galaxy Buds PAID order ($89.99)
 3. Click 'Ship'
 4. Select 'Manual Waybill'
-5. Enter: Waybill URL / Courier Phone / Estimated Delivery Date (future date)
-6. Confirm","Order status → SHIPPED. EDD timer starts via Durable Object. Buyer sees shipping info.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T033,Module 5 - Checkout,Delivery,Buyer - Confirm Delivery,BUYER,testbuyer@afia.com,NeoaTest2026!,Order in SHIPPED status,"1. Login as buyer
-2. Go to order detail for a SHIPPED order
-3. Click 'Confirm Delivery' button","Order status → DELIVERED. 48-hour dispute window timer starts. auto_release_at timestamp set. Vendor notified.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T034,Module 6 - Disputes,Dispute Filing,Buyer - File Dispute,BUYER,testbuyer@afia.com,NeoaTest2026!,Order in DELIVERED status (within 48h window),"1. Login as buyer
-2. Go to order detail for DELIVERED order
+5. Upload or enter waybill photo/URL
+6. Enter Courier Phone: +2348099887766
+7. Set Estimated Delivery: 5 days from now
+8. Confirm","Order status → SHIPPED. Waybill URL saved. Courier phone saved. EDD set. Buyer sees shipping info.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T038,Module 5 - Fulfillment,Delivery,Buyer - Confirm Delivery,BUYER,testbuyer@afia.com,NeoaTest2026!,"SHIPPED order exists (Leather Wallet, TRK-DHL-98765)","1. Login as buyer
+2. Go to order detail for Leather Wallet (SHIPPED)
+3. Click 'Confirm Delivery'","Order status → DELIVERED. 48-hour dispute window starts. auto_release_at timestamp set. Vendor notified.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T039,Module 5 - Fulfillment,Delivery,Second Buyer - Confirm Delivery,BUYER,testuser@neoa.com,NeoaTest2026!,"SHIPPED order exists (Ankara Fabric for Test User)","1. Login as Test User
+2. Go to SHIPPED Ankara Fabric order
+3. Click 'Confirm Delivery'","Order status → DELIVERED. 48h window starts. auto_release_at set.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+,,,,,,,,,,,,,,
+===== SECTION 6: DISPUTES =====,Module 6 - Disputes,,,,,,,,,,,,
+T040,Module 6 - Disputes,Filing,Buyer - File Dispute (on DELIVERED order),BUYER,testbuyer@afia.com,NeoaTest2026!,"DELIVERED order exists (Galaxy Buds, within 48h window)","1. Login as buyer
+2. Go to order detail for DELIVERED Galaxy Buds ($89.99)
 3. Click 'File Dispute'
 4. Select category: 'WRONG_ITEM'
-5. Enter reason: 'I received a completely different product than shown'
-6. Submit","Order status → DISPUTED. is_disputed = true. Vendor receives notification. Auto-release timer paused.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T035,Module 6 - Disputes,Admin Dispute View,Admin - View All Disputes,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,At least 1 disputed order,"1. Login as admin
-2. Navigate to Disputes section in admin panel","Shows list of all disputed orders with: buyer name / vendor name / dispute reason / category / timestamp.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T036,Module 6 - Disputes,Dispute Resolution,Admin - Resolve: Refund Buyer,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Disputed order exists,"1. Login as admin
-2. Open a disputed order
+5. Enter reason: 'Received wrong color earbuds'
+6. Submit","Order status → DISPUTED. is_disputed = true. Vendor gets notification. Auto-release paused.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T041,Module 6 - Disputes,Admin View,Admin - View All Disputes,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Disputed orders exist (2 seeded + 1 from T040),"1. Login as admin
+2. Navigate to Disputes section","Shows 2-3 disputed orders: Nike Air Max (WRONG_ITEM) / Leather Wallet (DAMAGED). Each shows: buyer / vendor / reason / category / timestamp.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T042,Module 6 - Disputes,Resolution,Admin - Resolve: Refund Buyer,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Disputed Nike Air Max order exists,"1. Login as admin
+2. Open disputed Nike Air Max order ($150 / WRONG_ITEM)
 3. Choose 'Refund to Buyer'
-4. Add admin notes: 'Product did not match listing. Full refund authorized.'
-5. Confirm","Order status → REFUNDED. Escrow → FROZEN. Paystack refund initiated (if real key). Audit log entry created. Both buyer and vendor notified.","MOCK: Paystack refund API will fail if key is placeholder. Note if the UI flow works regardless.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T037,Module 6 - Disputes,Dispute Resolution,Admin - Resolve: Release to Vendor,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Disputed order exists,"1. Login as admin
-2. Open a different disputed order
+4. Add notes: 'Product did not match listing. Full refund authorized.'
+5. Confirm","Order → REFUNDED. Escrow → FROZEN. Audit log entry created. Both parties notified.","Paystack refund API may fail if key is placeholder. Note if UI flow works.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T043,Module 6 - Disputes,Resolution,Admin - Resolve: Release to Vendor,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Disputed Leather Wallet order exists,"1. Login as admin
+2. Open disputed Leather Wallet order ($35 / DAMAGED)
 3. Choose 'Release to Vendor'
-4. Add admin notes: 'Dispute unfounded. Releasing funds.'
-5. Confirm","Order status → COMPLETED. Escrow → RELEASED. Audit log entry. Both parties notified.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T038,Module 6 - Disputes,Dispute Notes,Admin - Add Notes,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Disputed order exists,"1. Login as admin
+4. Add notes: 'Dispute unfounded. Normal wear. Releasing funds.'
+5. Confirm","Order → COMPLETED. Escrow → RELEASED. Audit log entry. Both parties notified.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T044,Module 6 - Disputes,Notes,Admin - Add Investigative Notes,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Disputed order exists,"1. Login as admin
 2. Open a disputed order
-3. Add investigative notes without resolving","Notes saved. Visible on the dispute detail page.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T039,Module 7 - Admin,Dashboard,Admin Analytics Overview,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,None,"1. Login as admin
-2. View main admin dashboard at /admin","Shows analytics cards: total users / total orders / total revenue / active disputes. Data should match DB.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T040,Module 7 - Admin,Vendor Management,Admin - View All Vendors,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,None,"1. Login as admin
-2. Navigate to Vendor Management section","Shows all vendors with: name / email / KYC status / product count / flag status. Should show 'Test Vendor' with KYC = VERIFIED.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T041,Module 7 - Admin,Vendor Management,Admin - Flag a Vendor,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,At least 1 vendor exists,"1. Login as admin
-2. Go to Vendor Management
-3. Click 'Flag' on Test Vendor
-4. Enter reason: 'Suspicious activity - testing flag feature'
-5. Confirm","Vendor shows 'Flagged' badge. is_flagged = true in DB. Audit log entry created. Flagged vendor should be restricted.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T042,Module 7 - Admin,Vendor Management,Admin - Unflag a Vendor,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Vendor is flagged (from T041),"1. Login as admin
-2. Go to Vendor Management
-3. Click 'Unflag' on flagged vendor
-4. Confirm","Flag removed. is_flagged = false. Audit log entry.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T043,Module 7 - Admin,Audit Log,Admin - View Audit Trail,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Some admin actions performed,"1. Login as admin
-2. Navigate to Audit Log section","Shows timestamped entries for: dispute resolutions / vendor flags / treasury toggles. Each entry shows: admin / action / target / timestamp.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T044,Module 7 - Admin,Payout Queue,Admin - View Payout Queue (Dual-Rail),SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,At least 1 DELIVERED order exists with auto_release_at in past,"1. Login as admin
-2. Navigate to Payout Queue
-3. If orders exist: expand a row to see details
-4. Check for payout rail badges (🇳🇬 NGN / 🌍 USD etc.)
-5. If international order exists: check for blue 'Copy details to Wise Dashboard' section","Shows escrow entries ready for payout. Each row shows vendor name with payout rail badge. Expanding a row shows order details. International orders show vendor bank details (Account Holder, IBAN, SWIFT, Currency) with copy buttons and 'Mark as Paid' button. Nigerian orders use batch payout via Paystack.","MOCK: If no DELIVERED orders exist payout queue will be empty. That's OK — check that UI layout loads.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T045,Module 7 - Admin,Treasury,Admin - Toggle Treasury Mode,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,At least 1 vendor exists,"1. Login as admin
-2. Find a vendor
-3. Toggle treasury mode (AUTO ↔ MANUAL)","Treasury mode changes. Audit log entry created.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T046,Module 8 - Payments,KYC,Vendor - View KYC Status,VENDOR,testvendor@afia.com,NeoaTest2026!,KYC = VERIFIED,"1. Login as vendor
+3. Type notes: 'Reviewing evidence. Awaiting vendor response.'
+4. Save without resolving","Notes saved and visible on dispute detail. Order stays DISPUTED.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+,,,,,,,,,,,,,,
+===== SECTION 7: ADMIN GOD MODE =====,Module 7 - Admin,,,,,,,,,,,,
+T045,Module 7 - Admin,Dashboard,Analytics Overview,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Data exists in DB,"1. Login as admin
+2. View /admin dashboard","Shows analytics cards: total users (7) / total orders (10) / total revenue / active disputes (2-3). Data matches DB.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T046,Module 7 - Admin,Vendors,View All Vendors,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Vendors exist,"1. Login as admin
+2. Navigate to Vendor Management","Shows 3 vendors: Test Vendor (VERIFIED/NG) / International Vendor (VERIFIED/US) / QA Vendor Fresh (NONE). Each: name / email / KYC status / products / flag status.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T047,Module 7 - Admin,Vendors,Flag a Vendor,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,QA Vendor Fresh exists,"1. Go to Vendor Management
+2. Click 'Flag' on QA Vendor Fresh
+3. Enter reason: 'Suspicious activity - testing flag'
+4. Confirm","Vendor shows 'Flagged' badge. is_flagged = true. Audit log entry created.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T048,Module 7 - Admin,Vendors,Unflag a Vendor,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Vendor flagged from T047,"1. Go to Vendor Management
+2. Click 'Unflag' on QA Vendor Fresh
+3. Confirm","Flag removed. is_flagged = false. Audit log entry created.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T049,Module 7 - Admin,Vendors,Toggle Treasury Mode,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Vendor exists,"1. Find Test Vendor
+2. Toggle treasury: AUTO → MANUAL_HOLD
+3. Verify change
+4. Toggle back: MANUAL_HOLD → AUTO","Treasury mode changes. Audit log entries for both changes.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T050,Module 7 - Admin,Audit,View Audit Log,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Admin actions from T042-T049 performed,"1. Navigate to Audit Log section","Shows timestamped entries for: DISPUTE_RESOLVED / VENDOR_FLAGGED / VENDOR_UNFLAGGED / TREASURY_MODE_CHANGED. Each: admin / action / target / timestamp.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T051,Module 7 - Admin,Payout Queue,View Payout Queue,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,"DELIVERED orders with auto_release_at in past exist (intl vendor order, NG completed order)","1. Go to Payout Queue
+2. Check for pending payouts
+3. Look for payout rail badges","Shows escrow entries ready for payout. NG orders: '🇳🇬 NGN' green badge. Intl orders: '🌍 USD' blue badge.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T052,Module 7 - Admin,Payout Queue,Payout Rail Badge Display,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Both NGN and intl orders in queue,"1. Payout Queue
+2. Check NG vendor row
+3. Check Intl vendor row","NG vendor: '🇳🇬 NGN' green badge. Intl vendor: '🌍 USD' blue badge with globe. Both have expand arrow.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T053,Module 7 - Admin,Payout Queue,International Bank Details + Copy Buttons,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Intl vendor order in payout queue,"1. Expand International Vendor order
+2. Check blue 'International Payout' section
+3. Click copy button next to IBAN
+4. Verify clipboard","Blue section shows: Account Holder='John Doe' / IBAN='US1234567890' / SWIFT='BOFAUS3N' / Currency='USD'. Copy buttons work. 'Open Wise' link visible. 'Mark as Paid' button visible.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T054,Module 7 - Admin,Payout Queue,Mark International Payout as Paid,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Intl order in payout queue,"1. Expand intl order → click 'Mark as Paid'
+2. Enter Wise Transfer Ref: 'TRANSFER-TEST-12345'
+3. Enter master password
+4. Click 'Confirm Payout Complete'","Modal shows details. Order → COMPLETED. Escrow → RELEASED with wise_transfer_id. Audit log: MANUAL_INTERNATIONAL_PAYOUT.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T055,Module 7 - Admin,Payout Queue,Batch Payout (NGN only / skip Intl),SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Both NGN & intl orders in queue,"1. Select All orders
+2. Click 'Process Batch Payout'
+3. Enter master password → Confirm","NGN orders: RELEASED. Intl orders: SKIPPED with message about Wise. NGN vendors get Paystack transfer.","Requires valid Paystack key for NGN. Note if blocked.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+,,,,,,,,,,,,,,
+===== SECTION 8: KYC & PAYMENTS =====,Module 8 - Payments,,,,,,,,,,,,
+T056,Module 8 - Payments,KYC,Verified Vendor - View KYC Status,VENDOR,testvendor@afia.com,NeoaTest2026!,KYC = VERIFIED,"1. Login as vendor
 2. Go to /vendor/settings
-3. View KYC section","Should show 'Verified' badge. KYC verification date shown.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T047,Module 8 - Payments,KYC,Unverified Vendor - Initiate KYC (African Country),VENDOR,-- (new vendor from T002),TestQA2026!,"KYC = NONE, SmileID sandbox","1. Login as unverified vendor
+3. View KYC section","Shows 'Verified' badge. KYC verification date shown. Country: NG. Method: biometric.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T057,Module 8 - Payments,KYC,Unverified Vendor - Start KYC (African / Nigeria),VENDOR,beloved.johnchidi@gmail.com,NeoaTest2026!,KYC = NONE,"1. Login as QA Vendor Fresh
 2. Go to Settings
 3. Click 'Start KYC Verification'
 4. Select 'Nigeria' from country list
-5. Select ID type (BVN / NIN / Voter's Card)
-6. Enter ID Number and personal details
-7. Take selfie (if Biometric KYC)
-8. Submit","SmileID integration page loads. Country grid shown. After selecting Nigeria: ID type picker shown. ID number field shown. Submit button shown. On submit: status changes to PENDING. Profile shows kyc_method and kyc_country.","MOCK: SmileID sandbox — won't fully verify. Note if the UI form loads and submission goes through.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T048,Module 8 - Payments,Bank Setup,Vendor - Add Nigerian Bank Account (Paystack),VENDOR,testvendor@afia.com,NeoaTest2026!,Logged in as verified vendor with kyc_country=NG,"1. Go to /vendor/settings
-2. Navigate to Bank Account section
-3. If rail selection screen appears: select '🇳🇬 Nigerian Bank (Paystack)'
-4. Select bank from dropdown (e.g. 'Guaranty Trust Bank')
-5. Enter Account Number: '0123456789'
-6. Click 'Verify & Save Bank Account'","Bank list loads (from Paystack API or fallback). Bank dropdown is searchable. On submit: account name resolved via Paystack. Success toast shown. Shows 'Ready for payouts'. Profile updated with bank_account_number, bank_code, bank_name.","MOCK: If Paystack key is placeholder, bank verification will fail. Note this.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T076,Module 8 - Payments,Bank Setup,Vendor - Add International Bank Account (Wise),VENDOR,-- (international vendor),TestQA2026!,"Logged in as verified vendor with kyc_country != NG (e.g. 'US'). Complete KYC with 'Other Country' first.","1. Go to /vendor/settings
-2. Navigate to Bank Account section
-3. If rail selection appears: select '🌍 International Bank (Wise)'
-4. Select payout currency (e.g. USD)
-5. Enter Account Holder Name: 'John Doe'
-6. Enter IBAN or Account Number: 'US1234567890'
-7. Enter SWIFT/BIC: 'BOFAUS3N' (optional)
-8. Click 'Save International Bank Details'","Currency selector shows 5 options with flags (USD/EUR/GBP/CAD/AUD). Form fields for holder name, IBAN, SWIFT visible. On submit: success message shown with 'Payouts via Wise'. Profile updated with settlement_currency = 'USD'. Payout information section mentions Wise.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T049,Module 8 - Payments,FX Rates,View Live FX Rates,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in,"1. Login as buyer
-2. View a USD-priced product
-3. Check if NGN equivalent is shown","Should show USD price and estimated NGN conversion rate.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T050,Module 9 - Notifications,Bell Icon,Notification Bell Visibility,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in,"1. Login as buyer
-2. Look for notification bell icon in the header/sidebar","Bell icon should be visible. May show unread count badge.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T051,Module 9 - Notifications,Panel,View Notification Panel,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in,"1. Click notification bell icon
-2. View notification list/panel","Panel opens showing notification list. If empty shows 'No notifications' message.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T052,Module 9 - Notifications,Mark Read,Mark Notification as Read,BUYER,testbuyer@afia.com,NeoaTest2026!,Has unread notifications,"1. Click bell
-2. Click on a notification
-3. Check if marked as read","Notification style changes (dimmed). Unread count decreases.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T053,Module 10 - Security,CORS,CORS Blocks External Origins,ANY,--,--,None,"1. Open browser console on any NON-Neoa site
-2. Run: fetch('https://neoa-api.neoamedia2026.workers.dev/api/orders')
-3. Check for CORS error","Should fail with CORS error. API only accepts requests from neoa-web.pages.dev.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T054,Module 10 - Security,XSS,XSS Prevention in Product Title,VENDOR,testvendor@afia.com,NeoaTest2026!,Verified vendor,"1. Login as vendor
-2. Create product with title: <script>alert('XSS')</script>
-3. Save and view on catalog","Script does NOT execute. Text displayed as plain escaped HTML.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T055,Module 10 - Security,Rate Limiting,API Rate Limiting,ANY,--,--,None,"1. Open console  
-2. Rapidly make 20+ quick requests to the API
-3. Observe responses","After exceeding rate limit: returns 429 Too Many Requests.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T056,Module 11 - DevOps,Health Check,API Health Endpoint,ANY,--,--,None,"1. Visit https://neoa-api.neoamedia2026.workers.dev/ in browser",Returns JSON: { status: 'ok' / service: 'afia-api' / version: '0.4.1' },N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T057,Module 11 - DevOps,Frontend Load,Frontend Loads Successfully,ANY,--,--,None,"1. Visit https://neoa-web.pages.dev","Login page loads with: Neoa branding / 'Trade Without Borders' hero / Sign-in form / Gold button. No blank screen.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T058,Module 11 - DevOps,SPA Routing,Deep Link - /login,ANY,--,--,None,"1. Visit https://neoa-web.pages.dev/login directly",Login page renders (not 404).,N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T059,Module 11 - DevOps,SPA Routing,Deep Link - /signup,ANY,--,--,None,"1. Visit https://neoa-web.pages.dev/signup directly",Signup page renders (not 404).,N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T060,Module 11 - DevOps,SPA Routing,Deep Link - /catalog,ANY,--,--,None,"1. Visit https://neoa-web.pages.dev/catalog directly",Catalog page renders with products (not 404).,N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T061,Module 1 - UI/UX,Responsive,Mobile Responsiveness,ANY,--,--,None,"1. Open https://neoa-web.pages.dev on mobile (or resize to 375px width)
-2. Navigate: login → signup → catalog → dashboard","All pages responsive. No horizontal scroll. Elements stack. Sidebar collapses to hamburger menu.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T062,Module 1 - UI/UX,Branding,Design Consistency,ANY,--,--,None,"1. Navigate through all pages
-2. Check: dark navy sidebar / gold accents / Inter/Outfit fonts / gradients","Consistent dark-mode Neoa branding throughout. Gold (#C8A45C) on CTAs. Professional premium appearance.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T063,Module 1 - UI/UX,Navigation,Sidebar Navigation,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in,"1. Click through ALL sidebar items
-2. Verify each page loads","Each menu item navigates to correct page. Active page highlighted in sidebar.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T064,Module 1 - UI/UX,Error Handling,Error Boundary,ANY,--,--,None,"1. Navigate to an invalid route like /nonexistent
-2. Check how errors are handled","Redirects to /catalog (catch-all route). No white screen of death.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T065,Module 11 - DevOps,Performance,Page Load Speed,ANY,--,--,None,"1. Open DevTools → Network tab
-2. Visit https://neoa-web.pages.dev
-3. Note load time + Lighthouse score","Load < 3 seconds. Lighthouse performance > 70. Chunks split: vendor / motion / supabase / main.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T066,Module 11 - DevOps,Console,Console Errors Check,ANY,--,--,None,"1. Open DevTools → Console
-2. Navigate: Login → Dashboard → Catalog → Product Detail
-3. Note ALL errors and warnings","No critical JS errors. PostHog/Sentry missing-key warnings acceptable. Supabase auth warnings acceptable.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-E2E-001,E2E,Full Flow,COMPLETE BUYER JOURNEY,BUYER,testbuyer@afia.com,NeoaTest2026!,Vendor has products listed,"1. Login as buyer (testbuyer@afia.com / NeoaTest2026!)
-2. Go to /catalog → browse products
-3. Click a product → view detail
-4. Click 'Buy Now' → checkout page
-5. Complete Paystack payment (test card: 4084 0840 8408 4081 / 12/30 / 408)
-6. Verify: order appears in /dashboard with PAID status
-7. Switch to vendor (testvendor@afia.com / NeoaTest2026!)
-8. Go to /vendor/orders → find the new order
-9. Ship the order (enter tracking info)
-10. Switch back to buyer → verify SHIPPED status on order detail
-11. Click 'Confirm Delivery'
-12. Verify DELIVERED status and 48h dispute countdown","Full lifecycle: Browse → Buy → Pay → Ship → Deliver. Each status transition visible. Notifications sent at each step.","Requires real Paystack test key. If placeholder → payment step will fail at step 5.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-E2E-002,E2E,Full Flow,COMPLETE DISPUTE FLOW,BOTH,See steps,See steps,A DELIVERED order exists,"1. Login as buyer (testbuyer@afia.com / NeoaTest2026!)
-2. Find DELIVERED order → click 'File Dispute'
-3. Category: WRONG_ITEM / Reason: 'Received wrong color'
-4. Verify DISPUTED status
-5. Login as ADMIN (testadmin@afia.com / NeoaAdmin2026!)
-6. Go to admin → Disputes
-7. View the dispute
-8. Add admin notes: 'Investigating claim'
-9. Resolve: choose 'Refund Buyer'
-10. Verify: order → REFUNDED / escrow → FROZEN
-11. Check audit log for the resolution entry","Dispute created → admin sees it → resolves it → status + escrow updated → audit logged → both parties notified.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-E2E-003,E2E,Full Flow,VENDOR ONBOARDING TO FIRST SALE,VENDOR,testvendor@afia.com,NeoaTest2026!,Vendor is KYC verified,"1. Login as vendor (testvendor@afia.com / NeoaTest2026!)
-2. Go to /vendor/products → click 'Add Product'
-3. Create: Title='Handmade Leather Bag' / Desc='Authentic Nigerian craftsmanship' / Price=200 / Currency=USD / Stock=5 / Category=Fashion
-4. Verify product on /catalog
-5. Login as buyer (testbuyer@afia.com / NeoaTest2026!)
-6. Find the new product → Buy it (Paystack test card)
-7. Vendor: check /vendor/orders for new order
-8. Vendor: ship the order",Vendor can: list product → product appears public → buyer purchases → vendor sees order → vendor ships.,"Requires real Paystack test key for step 6.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-E2E-004,E2E,Full Flow,ADMIN GOD MODE - FULL CAPABILITIES,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Users + orders + disputes exist,"1. Login as admin
-2. Dashboard → verify analytics cards show data
-3. Vendor Management → view vendors → flag one → check audit log → unflag
-4. Disputes → view disputes → verify trust score badge on buyer → add notes → resolve one
-5. Buyer Management → view all buyers → verify trust scores shown → adjust one buyer's score → check audit log
-6. Payout Queue → check for pending payouts
-7. Audit Log → verify ALL actions from steps 3-6 appear (including TRUST_SCORE_ADJUSTED)","Admin can access all God Mode features including Buyer Management. All actions create audit trail. Trust scores visible in disputes and buyer panel. Data displayed accurately.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T067,Module 8 - Payments,KYC,Unverified Vendor - Initiate KYC (International / Other Country),VENDOR,-- (new vendor from T002),TestQA2026!,"KYC = NONE, SmileID sandbox","1. Login as unverified vendor
-2. Go to Settings → Click 'Start KYC Verification'
-3. Scroll down and click '🌍 Other Country' (gold dashed border button)
+5. Select ID type (BVN / NIN)
+6. Enter ID Number and details
+7. Take selfie (if biometric)
+8. Submit","SmileID page loads. Country grid shown. After Nigeria: ID type picker. On submit: status → PENDING.","SmileID sandbox won't fully verify. Note if UI form loads and submission works.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T058,Module 8 - Payments,KYC,Unverified Vendor - Start KYC (International / Other Country),VENDOR,beloved.johnchidi@gmail.com,NeoaTest2026!,KYC = NONE,"1. Login as QA Vendor Fresh
+2. Settings → KYC
+3. Click '🌍 Other Country'
 4. Enter Country Code: 'US'
-5. Enter First Name and Last Name
-6. Click Next → Document Upload step appears
-7. Upload a photo of ID front (required)
-8. Optionally upload ID back
-9. Click Next → Selfie capture step
-10. Take selfie with camera
-11. Click Submit","'Other Country' option visible with globe icon. After clicking: country code input shown. Document upload screen shows front/back upload areas. Selfie screen works. On submit: KYC status changes to PENDING. Profile stores kyc_method='document_verification' and kyc_country='US'. Progress bar shows 4 steps (not 3).","MOCK: SmileID Document Verification sandbox — won't fully verify. Note if UI flow completes and submission reaches API.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T068,Module 8 - Trust Score,Buyer Dashboard,Buyer - View Trust Score on Dashboard,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in as buyer,"1. Login as buyer
+5. Enter First/Last Name
+6. Upload ID front photo
+7. Take selfie
+8. Submit","'Other Country' visible. Country code input shown. Document upload works. On submit: KYC → PENDING. kyc_method='document_verification' / kyc_country='US'.","SmileID sandbox won't fully verify. Note if UI completes.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T059,Module 8 - Payments,Bank,Vendor - Add Nigerian Bank (Paystack),VENDOR,testvendor@afia.com,NeoaTest2026!,Verified vendor / kyc_country=NG,"1. Go to /vendor/settings
+2. Bank Account section
+3. Select '🇳🇬 Nigerian Bank (Paystack)'
+4. Select bank: 'Guaranty Trust Bank'
+5. Enter Account: '0123456789'
+6. Click 'Verify & Save'","Bank list loads. Dropdown searchable. Account name resolved via Paystack. Success toast. Profile updated.","Paystack key needed for bank verification. Note if blocked.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T060,Module 8 - Payments,Bank,Vendor - Add International Bank (Wise),VENDOR,ogeemofficial@gmail.com,NeoaTest2026!,Verified vendor / kyc_country=US,"1. Login as International Vendor
+2. Settings → Bank Account
+3. Select '🌍 International Bank (Wise)'
+4. Select currency: USD
+5. Enter Holder: 'John Doe'
+6. Enter IBAN: 'US1234567890'
+7. Enter SWIFT: 'BOFAUS3N'
+8. Click 'Save International Bank Details'","Currency selector shows 5 options (USD/EUR/GBP/CAD/AUD). Form saves. Success message. settlement_currency='USD'.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T061,Module 8 - Payments,FX,View Live FX Rates,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in,"1. Login as buyer
+2. View a USD product
+3. Check if NGN equivalent is shown","Shows USD price and estimated NGN conversion rate (if implemented).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+,,,,,,,,,,,,,,
+===== SECTION 9: TRUST SCORE =====,Module 8 - Trust Score,,,,,,,,,,,,
+T062,Module 8 - Trust Score,Dashboard,Buyer - View Trust Score,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in as buyer,"1. Login as buyer
 2. Go to /dashboard
-3. Observe the stats cards row","First card shows 'Trust Score' with a number (default: 50). Shows circular progress ring colored by tier. Shows tier label: 'Normal' (for score 50). Star icon visible.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T069,Module 8 - Trust Score,Checkout Gate,Buyer - Flagged Buyer Cannot Checkout,BUYER,testbuyer@afia.com,NeoaTest2026!,"Buyer trust_score set to 10 via admin panel (T072). Product exists.","1. Login as the flagged buyer
-2. Go to /catalog → click a product
-3. Click 'Buy Now' → checkout page
-4. Click 'Pay with Paystack'","API returns 403 error. Error message explains the buyer's account is under review and to contact support. Paystack popup does NOT open. Buyer cannot complete purchase.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T070,Module 8 - Trust Score,Checkout Gate,Buyer - Normal Buyer Can Checkout,BUYER,testbuyer@afia.com,NeoaTest2026!,"Buyer trust_score = 50 (reset back via admin panel). Product exists.","1. Login as buyer (trust score back to 50)
+3. Look at stats cards row","First card: 'Trust Score' = 50. Circular progress ring. Tier: 'Normal' (gray). Star icon.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T063,Module 8 - Trust Score,Admin,Admin - View Buyer Management,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Buyers exist,"1. Login as admin
+2. Click 'Buyers' in sidebar","Shows: Total Buyers / Avg Score / Flagged count. List of buyers with trust score badges. Each buyer: order stats.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T064,Module 8 - Trust Score,Admin,Admin - Flag Buyer (Set Score to 10),SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Test Buyer exists with score=50,"1. Go to Buyers section
+2. Expand Test Buyer
+3. Click 'Flag (10)' preset
+4. Click 'Apply'","Score → 10. Badge → red 'Flagged'. Flagged count +1. Audit log: TRUST_SCORE_ADJUSTED (50→10).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T065,Module 8 - Trust Score,Checkout Gate,Flagged Buyer Cannot Checkout,BUYER,testbuyer@afia.com,NeoaTest2026!,Trust score = 10 (from T064),"1. Login as flagged buyer
 2. Go to /catalog → click a product
 3. Click 'Buy Now'
-4. Click 'Pay with Paystack'","Paystack popup opens. Checkout proceeds normally. No 403 error. Trust gate passes.","Requires real Paystack test key for payment to complete.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T071,Module 8 - Trust Score,Admin Panel,Admin - View Buyer Management Section,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,None,"1. Login as admin
-2. Click 'Buyers' in the sidebar navigation","Buyer Management page loads. Shows: Total Buyers count / Average Score / Flagged Accounts count. Search bar visible. List of all buyers with trust score badges (colored by tier). Each buyer shows order stats (total/completed/disputed).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T072,Module 8 - Trust Score,Admin Panel,Admin - Flag a Buyer (Adjust Trust Score),SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,At least 1 buyer exists,"1. Login as admin
-2. Go to Buyers section
-3. Click on a buyer to expand details
-4. In 'Adjust Trust Score' section click 'Flag (10)' preset button
-5. Click 'Apply'","Score updates to 10. Badge changes to red 'Flagged'. Flagged Accounts counter increments. Audit log entry created with action TRUST_SCORE_ADJUSTED showing previous and new score. Warning text confirms score ≤ 20 blocks purchases.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T073,Module 8 - Trust Score,Admin Panel,Admin - Unflag a Buyer (Reset Trust Score),SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Buyer is flagged from T072,"1. Login as admin
-2. Go to Buyers section
-3. Expand the flagged buyer
-4. Click 'Reset (50)' preset button
-5. Click 'Apply'","Score updates to 50. Badge changes to gray 'Normal'. Flagged Accounts counter decrements. Audit log entry created.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T074,Module 8 - Trust Score,Disputes,Admin - View Buyer Trust Badge in Disputes,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,At least 1 disputed order exists,"1. Login as admin
-2. Go to Disputes section
-3. View a dispute card
-4. Check buyer info line","Next to 'by [Buyer Name]' text: colored trust score badge shows (e.g., '⭐ 50 · Normal'). Badge color matches tier: red for Flagged / gray for Normal / green for Trusted / gold for Premium.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T075,Module 8 - Trust Score,Recalculation,Trust Score Auto-Recalculates After Dispute Resolution,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Disputed order exists for a buyer whose trust_score is known,"1. Login as admin → note buyer's current trust_score in Buyers section
-2. Go to Disputes → resolve a dispute (Refund Buyer = dispute WON by buyer)
-3. Go to Buyers section → check the same buyer's score","Buyer's trust score has been recalculated. Score changes based on outcome: dispute won = slight increase (+5) / dispute lost = decrease (-15). Score visible immediately in admin Buyers panel.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T077,Module 8 - Payments,Payout Queue,Payout Rail Badge Display,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,"Orders exist from both NGN and international vendors in payout queue","1. Login as admin → Payout Queue
-2. Check the payout row for a Nigerian vendor
-3. Check the payout row for an international vendor","Nigerian vendor row shows '🇳🇬 NGN' green badge next to vendor name. International vendor row shows '🌍 USD' (or EUR/GBP) blue badge with Globe icon. Both have expand arrow. Summary cards show correct totals.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T078,Module 8 - Payments,Payout Queue,International Bank Details with Copy Buttons,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,"International vendor order in payout queue with bank details saved","1. Login as admin → Payout Queue
-2. Expand an international vendor's order row
-3. Check for blue 'International Payout' section
-4. Click copy button next to IBAN
-5. Verify clipboard contains the IBAN value","Blue section appears with: Account Holder (with copy button) / IBAN or Account No. (with copy button) / SWIFT/BIC (with copy button) / Currency. 'Open Wise' link opens wise.com/send in new tab. Copy buttons show green checkmark momentarily after clicking. 'Mark as Paid' button visible at bottom.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Normal
-T079,Module 8 - Payments,Payout Queue,Admin - Mark International Payout as Paid (Manual Wise),SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,"International vendor order in payout queue. Admin has already processed the transfer in Wise dashboard.","1. Login as admin → Payout Queue
-2. Expand international order → click 'Mark as Paid'
-3. Modal appears → enter Wise Transfer Reference (e.g. 'TRANSFER-12345678')
-4. Enter master password
-5. Click 'Confirm Payout Complete'","Modal shows vendor name / amount / currency / account details. After confirming: order disappears from payout queue. Order status changes to COMPLETED. Escrow status changes to RELEASED with wise_transfer_id = the reference entered. Audit log entry created with action MANUAL_INTERNATIONAL_PAYOUT.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-T080,Module 8 - Payments,Payout Queue,Batch Payout Skips International Orders,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,"Both NGN and international orders in payout queue","1. Login as admin → Payout Queue
-2. Select All orders (including mix of NGN and international)
-3. Click 'Process Batch Payout'
-4. Enter master password → Confirm & Execute
-5. Check results","NGN orders show 'RELEASED' status. International orders show 'SKIPPED' with message: 'International payout — use Mark as Paid after processing via Wise dashboard'. International orders remain in queue for manual processing. NGN vendors receive Paystack transfer.","Requires valid Paystack secret key for NGN transfers to succeed.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
-E2E-005,E2E,Full Flow,BUYER TRUST SCORE LIFECYCLE,BOTH,See steps,See steps,"Buyer exists with orders. Admin account exists.","1. Login as buyer (testbuyer@afia.com / NeoaTest2026!) → verify Trust Score card shows 50/Normal on dashboard
-2. Complete a purchase (buy product → pay via Paystack)
-3. Vendor ships → Buyer confirms delivery → 48h window passes or auto-completes
-4. Login as buyer → check if Trust Score increased (should be > 50)
-5. Login as admin (testadmin@afia.com / NeoaAdmin2026!) → go to Buyers → verify buyer's score is updated
-6. Admin: flag buyer by setting score to 10 → verify audit log
-7. Login as buyer → attempt to Buy Now on any product
-8. Should see 403 blocked message at checkout
-9. Admin: reset score to 50 → verify audit log
-10. Buyer: retry purchase → should succeed","Trust score starts at 50. Increases after successful orders. Admin can flag (block from buying) and unflag. Flagged buyers see clear error at checkout. All adjustments logged in audit trail.","Requires real Paystack test key for purchase steps. Auto-complete requires 48h wait or manual DB trigger.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,Critical
+4. Click 'Pay with Paystack'","API returns 403. Error: account under review. Paystack does NOT open. Cannot purchase.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T066,Module 8 - Trust Score,Admin,Admin - Unflag Buyer (Reset to 50),SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Buyer flagged from T064,"1. Go to Buyers
+2. Expand flagged Test Buyer
+3. Click 'Reset (50)' preset
+4. Click 'Apply'","Score → 50. Badge → gray 'Normal'. Flagged count -1. Audit log: TRUST_SCORE_ADJUSTED (10→50).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T067,Module 8 - Trust Score,Checkout Gate,Unflagged Buyer Can Checkout,BUYER,testbuyer@afia.com,NeoaTest2026!,Trust score reset to 50 (from T066),"1. Login as buyer
+2. Go to /catalog → click product
+3. Click 'Buy Now'
+4. Click 'Pay with Paystack'","Paystack popup opens. Checkout proceeds. No 403 error.","Requires real Paystack key.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T068,Module 8 - Trust Score,Disputes,Trust Badge in Disputes View,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Disputed orders exist,"1. Login as admin
+2. Go to Disputes
+3. View buyer info on a dispute card","Next to buyer name: colored trust score badge (e.g. '⭐ 50 · Normal'). Color matches tier.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T069,Module 8 - Trust Score,Auto,Trust Score Recalculates After Dispute,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Disputed order + known buyer score,"1. Note buyer's trust score in Buyers section
+2. Resolve a dispute (Refund = buyer wins)
+3. Check buyer's score again","Score recalculated: dispute won = slight increase (+5). Visible immediately in admin Buyers panel.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+,,,,,,,,,,,,,,
+===== SECTION 10: NOTIFICATIONS =====,Module 9 - Notifications,,,,,,,,,,,,
+T070,Module 9 - Notifications,Bell,Notification Bell Visibility,BUYER,testbuyer@afia.com,NeoaTest2026!,Logged in,"1. Login as buyer
+2. Look for bell icon in header/sidebar","Bell icon visible. May show unread count badge (seeded notifications exist).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T071,Module 9 - Notifications,Panel,View Notification Panel,BUYER,testbuyer@afia.com,NeoaTest2026!,Notifications exist,"1. Click notification bell
+2. View notification list","Panel opens. Shows: 'Order Confirmed' / 'Item Shipped' / etc. If empty shows 'No notifications'.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T072,Module 9 - Notifications,Read,Mark Notification as Read,BUYER,testbuyer@afia.com,NeoaTest2026!,Unread notifications exist,"1. Click bell
+2. Click on a notification
+3. Check if marked as read","Notification style changes (dimmed). Unread count decreases.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T073,Module 9 - Notifications,Vendor,Vendor Receives Notifications,VENDOR,testvendor@afia.com,NeoaTest2026!,Notifications seeded,"1. Login as vendor
+2. Check notification bell","Shows: 'New Order Received' / 'Dispute Filed'. Unread count visible.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T074,Module 9 - Notifications,Admin,Admin Receives Notifications,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,Admin notification seeded,"1. Login as admin
+2. Check notification bell","Shows: 'New Dispute Alert'. System notification visible.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+,,,,,,,,,,,,,,
+===== SECTION 11: SECURITY =====,Module 10 - Security,,,,,,,,,,,,
+T075,Module 10 - Security,CORS,CORS Blocks External Origins,ANY,--,--,None,"1. Open browser console on any NON-Neoa site
+2. Run: fetch('https://neoa-api.neoamedia2026.workers.dev/api/orders')
+3. Check for CORS error","Should fail with CORS error. API only accepts requests from neoa-web.pages.dev.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T076,Module 10 - Security,XSS,XSS Prevention in Product Title,VENDOR,testvendor@afia.com,NeoaTest2026!,Verified vendor,"1. Create product with title: <script>alert('XSS')</script>
+2. Save and view on /catalog","Script does NOT execute. Text displayed as plain escaped HTML.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T077,Module 10 - Security,Rate Limit,API Rate Limiting,ANY,--,--,None,"1. Open console
+2. Rapidly make 20+ requests to the API
+3. Observe responses","After exceeding limit: returns 429 Too Many Requests.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+,,,,,,,,,,,,,,
+===== SECTION 12: DEVOPS & INFRASTRUCTURE =====,Module 11 - DevOps,,,,,,,,,,,,
+T078,Module 11 - DevOps,Health,API Health Endpoint,ANY,--,--,None,"1. Visit https://neoa-api.neoamedia2026.workers.dev/ in browser","Returns JSON: { status: 'ok' / service: 'afia-api' }",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T079,Module 11 - DevOps,Frontend,Frontend Loads Successfully,ANY,--,--,None,"1. Visit https://neoa-web.pages.dev","Login page loads: Neoa branding / hero text / Sign-in form / Gold button. No blank screen.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T080,Module 11 - DevOps,Routing,Deep Link - /login,ANY,--,--,None,"1. Visit https://neoa-web.pages.dev/login directly","Login page renders (not 404).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T081,Module 11 - DevOps,Routing,Deep Link - /signup,ANY,--,--,None,"1. Visit https://neoa-web.pages.dev/signup directly","Signup page renders (not 404).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T082,Module 11 - DevOps,Routing,Deep Link - /catalog,ANY,--,--,None,"1. Visit https://neoa-web.pages.dev/catalog directly","Catalog page renders with products (not 404).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T083,Module 11 - DevOps,Performance,Page Load Speed,ANY,--,--,None,"1. Open DevTools → Network tab
+2. Visit https://neoa-web.pages.dev
+3. Note load time + Lighthouse score","Load < 3 seconds. Lighthouse performance > 70.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T084,Module 11 - DevOps,Console,Console Errors Check,ANY,--,--,None,"1. Open DevTools → Console
+2. Navigate: Login → Dashboard → Catalog → Product Detail
+3. Note ALL errors/warnings","No critical JS errors. Minor warnings acceptable (PostHog/Sentry missing).",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+,,,,,,,,,,,,,,
+===== SECTION 13: UI/UX =====,Module 1 - UI/UX,,,,,,,,,,,,
+T085,Module 1 - UI/UX,Responsive,Mobile Responsiveness,ANY,--,--,None,"1. Open https://neoa-web.pages.dev on mobile (or 375px width)
+2. Navigate: login → signup → catalog → dashboard","All pages responsive. No horizontal scroll. Sidebar → hamburger. Elements properly stacked.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+T086,Module 1 - UI/UX,Branding,Design Consistency,ANY,--,--,None,"1. Navigate through all pages
+2. Check: colors / fonts / gradients / gold accents","Consistent Neoa branding. Gold (#C8A45C) CTAs. Inter/Outfit fonts. Professional appearance.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T087,Module 1 - UI/UX,Navigation,Sidebar Navigation (All Roles),ALL_ROLES,See login table,See login table,Login as each role,"1. Login as Buyer → click ALL sidebar items
+2. Login as Vendor → click ALL sidebar items
+3. Login as Admin → click ALL sidebar items","Each menu → correct page. Active page highlighted. No dead links.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+T088,Module 1 - UI/UX,Errors,Error Boundary / 404,ANY,--,--,None,"1. Visit /nonexistent route
+2. Check error handling","Redirects to /catalog or shows friendly 404. No white screen of death.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Normal
+,,,,,,,,,,,,,,
+===== SECTION 14: END-TO-END FLOWS =====,E2E,,,,,,,,,,,,
+E2E-001,E2E,Full Flow,COMPLETE BUYER JOURNEY,MULTI,"testbuyer@afia.com / testvendor@afia.com",NeoaTest2026!,Vendor has products,"1. Login as buyer (testbuyer@afia.com)
+2. Go to /catalog → browse → click 'Ankara Print Fabric'
+3. Click 'Buy Now' → checkout
+4. Pay with Paystack (4084 0840 8408 4081 / 12/30 / 408 / OTP:123456)
+5. Verify: order in /dashboard with PAID status
+6. Switch to vendor (testvendor@afia.com)
+7. /vendor/orders → find new order → Ship (API Tracking / TRK-E2E-001 / DHL)
+8. Switch to buyer → verify SHIPPED status
+9. Click 'Confirm Delivery'
+10. Verify DELIVERED + 48h countdown","Full lifecycle: Browse → Buy → Pay → Ship → Deliver. Each status transition visible.","Requires real Paystack test key.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+E2E-002,E2E,Full Flow,COMPLETE DISPUTE FLOW,MULTI,"testbuyer@afia.com / testadmin@afia.com","NeoaTest2026! / NeoaAdmin2026!",A DELIVERED order exists,"1. Login as buyer → find DELIVERED order → 'File Dispute'
+2. Category: NOT_RECEIVED / Reason: 'Never arrived'
+3. Verify DISPUTED status
+4. Login as admin → Disputes → view dispute
+5. Add notes: 'Investigating...'
+6. Resolve: 'Refund Buyer'
+7. Verify: REFUNDED / escrow FROZEN
+8. Check audit log for entry","Dispute → admin sees → resolves → status + escrow updated → audit logged.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+E2E-003,E2E,Full Flow,VENDOR ONBOARDING TO FIRST SALE,MULTI,"testvendor@afia.com / testbuyer@afia.com",NeoaTest2026!,Vendor is verified,"1. Login vendor → /vendor/products → Add Product
+2. Create: 'Beaded Bracelet Set' / $15 / Stock=30 / Accessories
+3. Verify on /catalog
+4. Login buyer → find → Buy (Paystack)
+5. Vendor: check /vendor/orders for new order
+6. Vendor: ship the order","Product created → public → buyer purchases → vendor sees & ships.","Requires Paystack key for step 4.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+E2E-004,E2E,Full Flow,ADMIN GOD MODE - ALL CAPABILITIES,SUPER_ADMIN,testadmin@afia.com,NeoaAdmin2026!,All data exists,"1. Login admin → Dashboard → verify analytics cards
+2. Vendor Management → view vendors → flag one → audit log → unflag
+3. Disputes → view → trust badge on buyer → notes → resolve one
+4. Buyers → view all → adjust trust score → audit log
+5. Payout Queue → check pending → rail badges
+6. Audit Log → ALL actions from steps 2-5 appear","Admin can access all God Mode features. All actions → audit trail. Trust scores visible.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+E2E-005,E2E,Full Flow,BUYER TRUST SCORE LIFECYCLE,MULTI,See steps below,See steps below,Buyer + Admin exist,"1. Buyer login → Trust Score card = 50/Normal
+2. Complete purchase (Paystack)
+3. Vendor ships → Buyer confirms delivery
+4. Check score increased (>50)
+5. Admin: flag buyer (score=10) → audit log
+6. Buyer: attempt Buy Now → 403 blocked
+7. Admin: reset to 50 → audit log
+8. Buyer: retry → success","Trust score lifecycle: start 50 → increases → admin flag blocks → unflag restores.","Paystack key needed for purchases.",☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+E2E-006,E2E,Full Flow,INTERNATIONAL VENDOR PAYOUT FLOW,MULTI,"ogeemofficial@gmail.com / testbuyer@afia.com / testadmin@afia.com",See login table,Intl vendor order DELIVERED + auto_release_at passed,"1. Confirm intl vendor has DELIVERED order with expired auto_release
+2. Login admin → Payout Queue
+3. Find intl vendor order → expand → see bank details
+4. Copy IBAN → verify clipboard
+5. Click 'Mark as Paid' → enter Wise ref
+6. Verify: order COMPLETED / escrow RELEASED / audit logged","International payout via manual Wise flow works. Copy buttons functional. Audit trail complete.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
+E2E-007,E2E,Full Flow,CROSS-ROLE DATA ISOLATION,MULTI,All test accounts,See login table,Multiple users with orders,"1. Login as Test Buyer → check orders → should ONLY see own orders
+2. Login as Test User → check orders → should ONLY see own orders
+3. Login as Test Vendor → check orders → should ONLY see orders for their products
+4. Login as Intl Vendor → should ONLY see their product orders
+5. Login as Admin → should see ALL orders","Each user sees only their data. No cross-user data leakage. Admin sees everything.",N/A,☐ PASS | ☐ FAIL | ☐ BLOCKED,,,Critical
