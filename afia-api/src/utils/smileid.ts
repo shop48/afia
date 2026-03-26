@@ -85,7 +85,8 @@ export interface SmileIdVerificationResult {
  */
 async function generateSmileIdSignature(
     timestamp: string,
-    apiKey: string
+    apiKey: string,
+    partnerId: string
 ): Promise<string> {
     const encoder = new TextEncoder()
     const key = await crypto.subtle.importKey(
@@ -96,10 +97,12 @@ async function generateSmileIdSignature(
         ['sign']
     )
 
+    // SmileID SDK: HMAC-SHA256(timestamp + partnerId + "sid_request")
+    const message = timestamp + partnerId + 'sid_request'
     const signatureBuffer = await crypto.subtle.sign(
         'HMAC',
         key,
-        encoder.encode(timestamp)
+        encoder.encode(message)
     )
 
     // Base64-encode the result
@@ -122,8 +125,10 @@ async function smileIdFetch(
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
-    const timestamp = new Date().toISOString()
-    const signature = await generateSmileIdSignature(timestamp, apiKey)
+    // SmileID requires: yyyy-MM-dd'T'HH:mm:ss.fffK (3ms digits, UTC offset not 'Z')
+    const now = new Date()
+    const timestamp = now.toISOString().replace('Z', '+00:00')
+    const signature = await generateSmileIdSignature(timestamp, apiKey, partnerId)
 
     try {
         const response = await fetch(`${SMILEID_API_BASE}${endpoint}`, {
