@@ -4,9 +4,10 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import {
   verifyWebhookSignature, initializeTransaction, generateReference, generateIdempotencyKey,
   verifyTransaction, createRefund, createTransferRecipient, initiateTransfer,
-  resolveAccountNumber, listBanks
+  resolveAccountNumber, listBanks, initiateBulkTransfer, getTransferStatus,
+  type BulkTransferItem
 } from './utils/paystack'
-import { checkMarginDrift, getCurrentFxRate, calculateFees, getLiveFxRate, cleanupRateCache } from './utils/margin-guard'
+import { checkMarginDrift, getCurrentFxRate, calculateFees, getLiveFxRate, cleanupRateCache, checkProfitFloor } from './utils/margin-guard'
 import { notifyUser, createBulkNotifications, getNotificationContent } from './utils/notifications'
 import {
   createRecipient as createWiseRecipient, createQuote, createTransfer as createWiseTransfer,
@@ -383,6 +384,8 @@ app.post('/api/checkout/initialize', async (c) => {
         currency: productCurrency,
         fx_rate_snapshot: fxRateSnapshot,
         idempotency_key: idempotencyKey,
+        commission_rate: 0.15,
+        payout_rail_preference: (vendor?.settlement_currency === 'NGN') ? 'PAYSTACK_NGN' : 'WISE_GLOBAL',
       },
     })
 
@@ -650,6 +653,160 @@ app.post('/api/webhooks/paystack', async (c) => {
   }
 
   return c.json({ message: 'Webhook processed', orderId: order.id }, 200)
+})
+
+// ══════════════════════════════════════════════
+// MODULE 11: PAYSTACK TRANSFER WEBHOOK
+// POST /api/webhooks/paystack-transfer
+// NO AUTH — verified via HMAC signature
+// Handles: transfer.success, transfer.failed, transfer.reversed
+// Paystack sends ONE webhook per transfer in a bulk batch
+// ══════════════════════════════════════════════
+
+app.post('/api/webhooks/paystack-transfer', async (c) => {
+  const rawBody = await c.req.text()
+  const signature = c.req.header('x-paystack-signature')
+
+  // 1. Require signature header
+  if (!signature) {
+    return c.json({ error: 'Missing signature' }, 401)
+  }
+
+  // 2. Verify webhook signature (same HMAC-SHA512 as charge webhooks)
+  const isValid = await verifyWebhookSignature(rawBody, signature, c.env.PAYSTACK_SECRET_KEY)
+  if (!isValid) {
+    console.error('Invalid Paystack transfer webhook signature')
+    return c.json({ error: 'Invalid signature' }, 401)
+  }
+
+  // 3. Parse payload safely
+  let payload: {
+    event: string
+    data: {
+      id: number
+      transfer_code: string
+      reference: string
+      amount: number
+      currency: string
+      status: string
+      reason: string
+      recipient: {
+        recipient_code: string
+        name: string
+        details: {
+          account_number: string
+          bank_code: string
+          bank_name: string
+        }
+      }
+    }
+  }
+
+  try {
+    payload = JSON.parse(rawBody)
+  } catch {
+    console.error('Malformed transfer webhook payload')
+    return c.json({ error: 'Invalid JSON' }, 400)
+  }
+
+  const { event, data } = payload
+  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_KEY)
+
+  // 4. Find the escrow entry by transfer code or reference
+  const { data: escrow } = await supabase
+    .from('escrow_ledger')
+    .select('id, order_id, status, net_payout')
+    .or(`paystack_transfer_code.eq.${data.transfer_code},paystack_transfer_reference.eq.${data.reference}`)
+    .maybeSingle()
+
+  if (!escrow) {
+    console.warn(`Paystack transfer webhook: no escrow found for transfer ${data.transfer_code} / ref ${data.reference}`)
+    return c.json({ message: 'Transfer not tracked' }, 200)
+  }
+
+  // 5. Handle different transfer events
+  if (event === 'transfer.success') {
+    // ✅ Vendor got paid — finalize escrow
+    await supabase
+      .from('escrow_ledger')
+      .update({
+        status: 'RELEASED',
+        paystack_transfer_status: 'success',
+        payout_completed_at: new Date().toISOString(),
+      })
+      .eq('id', escrow.id)
+
+    // Update order to COMPLETED
+    await supabase
+      .from('orders')
+      .update({ status: 'COMPLETED' })
+      .eq('id', escrow.order_id)
+
+    // Notify vendor of successful payout
+    try {
+      const { data: orderData } = await supabase
+        .from('orders')
+        .select('vendor_id, product:products(title), total_amount, currency')
+        .eq('id', escrow.order_id)
+        .maybeSingle()
+
+      if (orderData?.vendor_id) {
+        const product = Array.isArray(orderData.product) ? orderData.product[0] : orderData.product
+        await notifyUser(supabase, orderData.vendor_id, 'PAYOUT_RELEASED', {
+          orderId: escrow.order_id,
+          productTitle: product?.title,
+          amount: escrow.net_payout,
+          currency: orderData.currency,
+        })
+      }
+    } catch (notifErr) {
+      console.error('Failed to send transfer success notification:', notifErr)
+    }
+
+    console.log(`✅ TRANSFER SUCCESS: ${data.transfer_code} | Order ${escrow.order_id} | ₦${data.amount / 100} to ${data.recipient?.name}`)
+
+  } else if (event === 'transfer.failed') {
+    // ❌ Transfer failed — revert escrow to LOCKED for admin retry
+    await supabase
+      .from('escrow_ledger')
+      .update({
+        status: 'LOCKED',
+        paystack_transfer_status: 'failed',
+      })
+      .eq('id', escrow.id)
+
+    // Revert order back to DELIVERED (admin can retry payout)
+    await supabase
+      .from('orders')
+      .update({ status: 'DELIVERED' })
+      .eq('id', escrow.order_id)
+
+    console.error(`❌ TRANSFER FAILED: ${data.transfer_code} | Order ${escrow.order_id} | Reason: ${data.reason || 'unknown'}`)
+
+  } else if (event === 'transfer.reversed') {
+    // 🔄 Transfer reversed — freeze escrow, needs admin investigation
+    await supabase
+      .from('escrow_ledger')
+      .update({
+        status: 'FROZEN',
+        paystack_transfer_status: 'reversed',
+      })
+      .eq('id', escrow.id)
+
+    // Freeze the order — admin must investigate
+    await supabase
+      .from('orders')
+      .update({ status: 'DISPUTED' })
+      .eq('id', escrow.order_id)
+
+    console.error(`🔄 TRANSFER REVERSED: ${data.transfer_code} | Order ${escrow.order_id} — FROZEN for admin review`)
+
+  } else {
+    console.log(`Paystack transfer webhook: ignoring event ${event}`)
+    return c.json({ message: 'Event ignored' }, 200)
+  }
+
+  return c.json({ message: 'Transfer webhook processed' }, 200)
 })
 
 // ══════════════════════════════════════════════
@@ -1182,6 +1339,47 @@ app.post('/api/kyc/submit', async (c) => {
   const requestUrl = new URL(c.req.url)
   const callbackUrl = `${requestUrl.origin}/api/webhooks/smileid`
 
+  // ── SANDBOX MOCK MODE ──
+  // When not in production and using SmileID's known test ID numbers,
+  // bypass the API and simulate the result instantly.
+  // Test IDs: '00000000001' = VERIFIED, '00000000002' = REJECTED
+  // Remove this block once SmileID enables Enhanced KYC for the account.
+  const isSandbox = c.env.ENVIRONMENT !== 'production'
+  const SANDBOX_TEST_IDS = ['00000000001', '00000000002']
+  const isMockRequest = isSandbox && idNumber && SANDBOX_TEST_IDS.includes(idNumber)
+
+  if (isMockRequest) {
+    const mockJobId = `MOCK-KYC-${user.id.slice(0, 8)}-${Date.now()}`
+    const isVerified = idNumber === '00000000001'
+    const kycMethod = isEnhancedKycCountry
+      ? (selfieImage ? 'biometric_kyc' : 'enhanced_kyc')
+      : 'document_verification'
+
+    console.log(`🧪 [Sandbox Mock] KYC ${isVerified ? 'VERIFIED' : 'REJECTED'} for user ${user.id} (idNumber: ${idNumber})`)
+
+    await supabase
+      .from('profiles')
+      .update({
+        smileid_job_id: mockJobId,
+        kyc_submitted_at: new Date().toISOString(),
+        kyc_level: isVerified ? 'VERIFIED' : 'REJECTED',
+        kyc_method: kycMethod,
+        kyc_country: country,
+        kyc_verified_at: isVerified ? new Date().toISOString() : null,
+        kyc_rejection_reason: isVerified ? null : 'Sandbox test: ID not found (test number 00000000002)',
+      })
+      .eq('id', user.id)
+
+    return c.json({
+      message: isVerified ? 'KYC verification successful (sandbox mock)' : 'KYC verification rejected (sandbox mock)',
+      job_id: mockJobId,
+      status: isVerified ? 'VERIFIED' : 'REJECTED',
+      method: kycMethod,
+      sandbox_mock: true,
+    })
+  }
+
+  // ── LIVE SmileID API CALL ──
   try {
     let result
 
@@ -2440,54 +2638,84 @@ app.post('/api/admin/payout/execute-batch', async (c) => {
       continue
     }
 
-    // Module 8: Determine payout method and execute real transfer
-    // Fetch vendor profile for recipient info
+    // Module 8+11: Determine payout method and execute real transfer
+    // Fetch vendor profile for recipient info (includes cached paystack_recipient_code)
     const { data: vendorProfile } = await serviceSupabase
       .from('profiles')
-      .select('settlement_currency, wise_recipient_id, bank_account_number, bank_code, bank_account_name')
+      .select('settlement_currency, wise_recipient_id, bank_account_number, bank_code, bank_account_name, paystack_recipient_code')
       .eq('id', order.vendor_id)
       .single()
 
     const payoutRail = escrow.payout_rail_type || (vendorProfile?.settlement_currency === 'NGN' ? 'PAYSTACK_NGN' : 'WISE_GLOBAL')
-    const escrowUpdate: Record<string, unknown> = { status: 'RELEASED', payout_executed_at: new Date().toISOString(), payout_executed_by: user.id }
 
-    // Update order to COMPLETED
-    const { error: orderErr } = await serviceSupabase
-      .from('orders')
-      .update({ status: 'COMPLETED' })
-      .eq('id', order.id)
+    // ── 10% Net Profit Floor Check ──
+    const profitCheck = checkProfitFloor({
+      grossAmount: Number(order.total_amount || escrow.gross_amount),
+      currency: order.currency || 'NGN',
+      payoutRail,
+    })
 
-    if (orderErr) {
-      results.push({ orderId: order.id, status: 'FAILED', error: orderErr.message })
+    if (!profitCheck.passed) {
+      console.warn(`⚠️ PROFIT FLOOR FAILED for order ${order.id}: ${profitCheck.details}`)
+      results.push({
+        orderId: order.id,
+        status: 'SKIPPED',
+        error: `Profit floor check failed: ${profitCheck.details}. Review margins before releasing.`,
+      })
       continue
+    }
+
+    // Set escrow to RELEASE_PENDING (will become RELEASED when transfer.success webhook arrives)
+    const escrowUpdate: Record<string, unknown> = {
+      status: 'RELEASE_PENDING',
+      payout_executed_at: new Date().toISOString(),
+      payout_executed_by: user.id,
+      profit_floor_check: profitCheck.passed,
+      net_profit_percent: profitCheck.netProfitPercent,
     }
 
     // Execute real payout based on rail type
     if (payoutRail === 'PAYSTACK_NGN' && vendorProfile?.bank_account_number && vendorProfile?.bank_code) {
       // NGN payout via Paystack Transfer
       try {
-        // Create recipient if needed
-        const recipient = await createTransferRecipient({
-          type: 'nuban',
-          name: vendorProfile.bank_account_name || 'Vendor',
-          accountNumber: vendorProfile.bank_account_number,
-          bankCode: vendorProfile.bank_code,
-          secretKey: c.env.PAYSTACK_SECRET_KEY,
-        })
+        // Use cached recipient code if available, otherwise create new
+        let recipientCode = vendorProfile.paystack_recipient_code
+
+        if (!recipientCode) {
+          const recipient = await createTransferRecipient({
+            type: 'nuban',
+            name: vendorProfile.bank_account_name || 'Vendor',
+            accountNumber: vendorProfile.bank_account_number,
+            bankCode: vendorProfile.bank_code,
+            secretKey: c.env.PAYSTACK_SECRET_KEY,
+          })
+          recipientCode = recipient.recipient_code
+
+          // Cache the recipient code for future payouts
+          await serviceSupabase
+            .from('profiles')
+            .update({ paystack_recipient_code: recipientCode })
+            .eq('id', order.vendor_id)
+        }
+
+        // Generate unique reference for idempotency
+        const transferRef = `NEOA-PAYOUT-${order.id.slice(0, 8)}-${Date.now().toString(36)}`
 
         // Initiate transfer (amount in kobo)
         const transfer = await initiateTransfer({
           amount: Math.round(Number(escrow.net_payout) * 100),
-          recipientCode: recipient.recipient_code,
-          reason: `Afia payout: Order ${order.id.slice(0, 8)}`,
-          reference: `AFIA-PAYOUT-${order.id.slice(0, 8)}-${Date.now().toString(36)}`,
+          recipientCode,
+          reason: `Neoa payout: Order ${order.id.slice(0, 8)}`,
+          reference: transferRef,
           secretKey: c.env.PAYSTACK_SECRET_KEY,
         })
 
         escrowUpdate.paystack_transfer_id = String(transfer.id)
         escrowUpdate.paystack_transfer_code = transfer.transfer_code
-        escrowUpdate.paystack_recipient_code = recipient.recipient_code
-        console.log(`💰 Paystack payout for order ${order.id}: transfer ${transfer.transfer_code}`)
+        escrowUpdate.paystack_transfer_reference = transferRef
+        escrowUpdate.paystack_transfer_status = transfer.status || 'pending'
+        escrowUpdate.paystack_recipient_code = recipientCode
+        console.log(`💰 Paystack payout INITIATED for order ${order.id}: transfer ${transfer.transfer_code} (status: RELEASE_PENDING → awaiting transfer.success webhook)`)
       } catch (payErr) {
         const payMsg = payErr instanceof Error ? payErr.message : 'Unknown payout error'
         console.error(`❌ Paystack payout failed for order ${order.id}:`, payMsg)
@@ -2495,23 +2723,29 @@ app.post('/api/admin/payout/execute-batch', async (c) => {
         results.push({ orderId: order.id, status: 'FAILED', error: `Paystack payout: ${payMsg}` })
         continue
       }
+
+      // Don't set order to COMPLETED yet — wait for transfer.success webhook
+      // Order stays in DELIVERED, escrow moves to RELEASE_PENDING
+
     } else if (payoutRail === 'WISE_GLOBAL') {
       // International payouts — skip for manual processing via Wise dashboard
-      // Admin should use the "Mark as Paid" feature after manually transferring via Wise
+      // Admin withdraws USD from Paystack domiciliary → funds Wise → sends to vendor
+      // Then uses "Mark as Paid" feature to confirm
       results.push({
         orderId: order.id,
         status: 'SKIPPED',
         error: 'International payout — use "Mark as Paid" after processing via Wise dashboard',
       })
-      // Revert order status since we skipped
-      await serviceSupabase
-        .from('orders')
-        .update({ status: 'DELIVERED' })
-        .eq('id', order.id)
       continue
     } else {
-      // No payout method configured — mark as released (manual payout)
-      console.warn(`⚠️ No payout method for order ${order.id} (rail: ${payoutRail}). Marked as RELEASED for manual processing.`)
+      // No payout method configured — flag for admin review
+      console.warn(`⚠️ No payout method for order ${order.id} (rail: ${payoutRail}). Needs bank account setup.`)
+      results.push({
+        orderId: order.id,
+        status: 'SKIPPED',
+        error: 'Vendor has no bank account configured. Ask vendor to set up bank details.',
+      })
+      continue
     }
 
     // Update escrow
