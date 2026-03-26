@@ -35,7 +35,23 @@
   // Activate with: wrangler deploy --env production
   "env": {
     "production": {
-      "name": "neoa-api-production",
+      "name": "neoa-api",
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "ORDER_DO",
+            "class_name": "OrderDO"
+          }
+        ]
+      },
+      "migrations": [
+        {
+          "tag": "v1",
+          "new_sqlite_classes": [
+            "OrderDO"
+          ]
+        }
+      ],
       "vars": {
         "ENVIRONMENT": "production",
         "REQUIRE_MFA": "true"
