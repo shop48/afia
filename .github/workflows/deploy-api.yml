@@ -22,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: afia-api/package-lock.json
 
@@ -35,7 +35,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: afia-api
-          command: deploy --minify --env production
+          command: deploy --minify
           secrets: |
             SUPABASE_URL
             SUPABASE_KEY
@@ -49,6 +49,7 @@ jobs:
             SMILEID_PARTNER_ID
             SMILEID_API_KEY
             SMILEID_WEBHOOK_SECRET
+            ENVIRONMENT
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
@@ -62,3 +63,4 @@ jobs:
           SMILEID_PARTNER_ID: ${{ secrets.SMILEID_PARTNER_ID }}
           SMILEID_API_KEY: ${{ secrets.SMILEID_API_KEY }}
           SMILEID_WEBHOOK_SECRET: ${{ secrets.SMILEID_WEBHOOK_SECRET }}
+          ENVIRONMENT: production
