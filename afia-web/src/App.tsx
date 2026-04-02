@@ -9,6 +9,7 @@ import LoginPage from './pages/auth/LoginPage'
 import SignupPage from './pages/auth/SignupPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import VerifyEmailPage from './pages/auth/VerifyEmailPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 
 // ── Dashboard Pages ──
 import BuyerDashboard from './pages/dashboard/BuyerDashboard'
@@ -71,6 +72,7 @@ export default function App() {
               }
             />
             <Route path="/auth/verify" element={<VerifyEmailPage />} />
+            <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
 
             {/* ══════ BUYER ROUTES ══════ */}
             <Route
