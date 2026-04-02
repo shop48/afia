@@ -21,7 +21,8 @@ dist/
 # Tooling
 # ────────────────────────────
 .wrangler/
-.agent/mcp.json
+.agent/
+.gemini/
 tsc-output.txt
 
 # ────────────────────────────

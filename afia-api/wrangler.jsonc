@@ -56,10 +56,10 @@
         "ENVIRONMENT": "production",
         "REQUIRE_MFA": "true"
       },
-      // Uncomment and set when custom domain is ready:
-      // "routes": [
-      //   { "pattern": "api.neoa.com/*", "zone_name": "neoa.com" }
-      // ]
+      // Custom domain route — activated April 2026
+      "routes": [
+        { "pattern": "api.neoahq.com/*", "zone_name": "neoahq.com" }
+      ],
       "observability": {
         "enabled": true,
         "head_sampling_rate": 0.1
