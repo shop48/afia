@@ -221,7 +221,13 @@ export function useNotifications() {
                     }
                 }
             )
-            .subscribe()
+            .subscribe((status, err) => {
+                if (status === 'CHANNEL_ERROR') {
+                    console.warn('[Realtime] Channel error — will auto-retry:', err?.message)
+                } else if (status === 'TIMED_OUT') {
+                    console.warn('[Realtime] Subscription timed out — will auto-retry')
+                }
+            })
 
         return () => {
             supabase.removeChannel(channel)

@@ -18,4 +18,11 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
         // Detect session from URL (for email confirm redirects)
         detectSessionInUrl: true,
     },
+    realtime: {
+        // Increase heartbeat interval to reduce WebSocket chatter
+        heartbeatIntervalMs: 30_000,
+        // Exponential backoff on reconnect to prevent connection storms
+        reconnectAfterMs: (tries: number) =>
+            Math.min(1000 * 2 ** tries, 30_000),
+    },
 })
