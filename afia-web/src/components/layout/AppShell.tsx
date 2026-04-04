@@ -107,9 +107,9 @@ function SidebarContent({
         <>
             {/* Logo + Notification */}
             <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 shrink-0">
-                <span className="font-[family-name:var(--font-heading)] text-xl font-bold tracking-tight">
+                <button onClick={() => onNavigate?.('/')} className="font-[family-name:var(--font-heading)] text-xl font-bold tracking-tight cursor-pointer bg-transparent border-none text-white">
                     <span className="text-gold">N</span>eoa
-                </span>
+                </button>
                 <div className="flex items-center gap-1">
                     {(role === 'ADMIN' || role === 'SUPER_ADMIN') && (
                         <span className="px-2 py-0.5 bg-gold/20 text-gold text-[10px] font-bold rounded-full uppercase">
@@ -213,9 +213,9 @@ export default function AppShell({ children, role = 'BUYER', activePath = '/', u
                 MOBILE HEADER (fixed top)
                ══════════════════════════════════════════ */}
             <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-navy text-white flex items-center justify-between px-4 z-40 shadow-md">
-                <span className="font-[family-name:var(--font-heading)] text-lg font-bold">
+                <button onClick={() => onNavigate?.('/')} className="font-[family-name:var(--font-heading)] text-lg font-bold cursor-pointer bg-transparent border-none text-white">
                     <span className="text-gold">N</span>eoa
-                </span>
+                </button>
                 <div className="flex items-center gap-1">
                     <NotificationCenter onNavigate={onNavigate} role={role} variant="dark" />
                     <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-white/10 cursor-pointer">
