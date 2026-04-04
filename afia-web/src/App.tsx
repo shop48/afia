@@ -33,6 +33,7 @@ import VendorSettingsPage from './pages/vendor/VendorSettingsPage'
 import DesignShowcase from './pages/DesignShowcase'
 import AdminDashboard from './components/admin/AdminDashboard'
 import MfaSetup from './pages/auth/MfaSetup'
+import LandingPage from './pages/LandingPage'
 
 export default function App() {
   return (
@@ -41,7 +42,7 @@ export default function App() {
         <AuthProvider>
           <Routes>
             {/* ══════ PUBLIC ROUTES ══════ */}
-            <Route path="/" element={<Navigate to="/catalog" replace />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="/showcase" element={<DesignShowcase />} />
             <Route path="/catalog" element={<CatalogPage />} />
             <Route path="/catalog/:productId" element={<ProductDetailPage />} />

@@ -1,0 +1,492 @@
+/* ============================================
+   NEOA LANDING PAGE — Custom Styles
+   ============================================ */
+
+/* ── Glassmorphism Nav ── */
+.landing-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-nav.scrolled {
+  background: rgba(26, 35, 50, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* ── Hero Section ── */
+.hero-section {
+  background: linear-gradient(
+    135deg,
+    #1A2332 0%,
+    #243044 40%,
+    #1A2332 70%,
+    #1e293b 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(197, 160, 89, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.hero-section::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(197, 160, 89, 0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ── Floating Mockup Animation ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
+}
+
+.hero-mockup {
+  animation: float 5s ease-in-out infinite;
+}
+
+.hero-mockup:nth-child(2) {
+  animation-delay: -1.5s;
+}
+
+.hero-mockup:nth-child(3) {
+  animation-delay: -3s;
+}
+
+/* ── Infinite Marquee (Categories & Feed) ── */
+@keyframes marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.marquee-track {
+  display: flex;
+  gap: 1rem;
+  width: max-content;
+  will-change: transform;
+}
+
+.marquee-left {
+  animation: marquee-left 35s linear infinite;
+}
+
+.marquee-right {
+  animation: marquee-right 35s linear infinite;
+}
+
+.marquee-left:hover,
+.marquee-right:hover {
+  animation-play-state: paused;
+}
+
+/* ── Feed Card Scroll (slower for readability) ── */
+.feed-marquee-left {
+  animation: marquee-left 60s linear infinite;
+}
+
+.feed-marquee-right {
+  animation: marquee-right 60s linear infinite;
+}
+
+.feed-marquee-left:hover,
+.feed-marquee-right:hover {
+  animation-play-state: paused;
+}
+
+/* ── Testimonial Scroll ── */
+.testimonial-track {
+  display: flex;
+  gap: 1.5rem;
+  width: max-content;
+  animation: marquee-left 45s linear infinite;
+}
+
+.testimonial-track:hover {
+  animation-play-state: paused;
+}
+
+/* ── Escrow Timeline ── */
+.escrow-timeline {
+  position: relative;
+}
+
+.escrow-timeline::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 24px;
+  bottom: 24px;
+  width: 2px;
+  background: linear-gradient(to bottom, #C5A059, #D4B778);
+  border-radius: 999px;
+}
+
+.timeline-step {
+  position: relative;
+  padding-left: 52px;
+  padding-bottom: 2rem;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #C5A059;
+  border: 3px solid #fef3c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.timeline-dot::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+/* ── Bento Grid ── */
+.bento-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bento-card {
+  border-radius: 1.25rem;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: default;
+}
+
+.bento-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(26, 35, 50, 0.12);
+}
+
+
+
+/* ── FAQ Accordion ── */
+.faq-item {
+  border-bottom: 1px solid #E5E7EB;
+  overflow: hidden;
+}
+
+.faq-question {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0;
+  font-weight: 500;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: #1A2332;
+  transition: color 0.2s ease;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.faq-question:hover {
+  color: #C5A059;
+}
+
+.faq-question .chevron {
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.faq-question.open .chevron {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease,
+              padding 0.3s ease;
+  max-height: 0;
+  opacity: 0;
+  padding-bottom: 0;
+}
+
+.faq-answer.open {
+  max-height: 300px;
+  opacity: 1;
+  padding-bottom: 1.25rem;
+}
+
+/* ── CTA Section ── */
+.cta-section {
+  background: linear-gradient(
+    135deg,
+    #1A2332 0%,
+    #243044 50%,
+    #1A2332 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-section::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  background: rgba(197, 160, 89, 0.08);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.cta-section::after {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  left: -40px;
+  width: 160px;
+  height: 160px;
+  background: rgba(197, 160, 89, 0.05);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ── Footer ── */
+.landing-footer {
+  background: #1A2332;
+  color: #E5E7EB;
+}
+
+.landing-footer a {
+  color: #E5E7EB;
+  transition: color 0.2s ease;
+}
+
+.landing-footer a:hover {
+  color: #C5A059;
+}
+
+/* ── Category Pill ── */
+.category-pill {
+  white-space: nowrap;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-body);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1.5px solid;
+  cursor: default;
+}
+
+.category-pill:hover {
+  transform: scale(1.05);
+}
+
+/* ── Stats Counter ── */
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 2.5rem;
+  line-height: 1;
+  color: white;
+}
+
+.stat-label {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: #d1d5db;
+  margin-top: 0.25rem;
+}
+
+/* ── Testimonial Card ── */
+.testimonial-card {
+  min-width: 320px;
+  max-width: 360px;
+  background: #1A2332;
+  border-radius: 1rem;
+  padding: 1.75rem;
+  color: white;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.testimonial-card:hover {
+  transform: scale(1.02);
+}
+
+/* ── Feed Product Card ── */
+.feed-card {
+  min-width: 260px;
+  max-width: 280px;
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid #E5E7EB;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feed-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(26, 35, 50, 0.1);
+}
+
+.feed-card-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+}
+
+/* ── Smooth Section Divider ── */
+.section-wave {
+  position: relative;
+}
+
+.section-wave::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, #FAFAFA);
+  pointer-events: none;
+}
+
+/* ── Gold Toggle Switch ── */
+.toggle-group {
+  display: inline-flex;
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 4px;
+  gap: 2px;
+}
+
+.toggle-btn {
+  padding: 0.5rem 1.5rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-body);
+  background: transparent;
+  color: #6b7280;
+}
+
+.toggle-btn.active {
+  background: #1A2332;
+  color: white;
+  box-shadow: 0 2px 8px rgba(26, 35, 50, 0.2);
+}
+
+/* ── Step Card ── */
+.step-card {
+  background: white;
+  border-radius: 1.25rem;
+  overflow: visible;
+  border: 1px solid #E5E7EB;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(26, 35, 50, 0.08);
+}
+
+.step-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #C5A059;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  z-index: 2;
+  box-shadow: 0 4px 8px rgba(197, 160, 89, 0.3);
+}
+
+/* ── Pulse Animation for Social Proof ── */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #C5A059;
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .stat-number {
+    font-size: 1.75rem;
+  }
+
+  .testimonial-card {
+    min-width: 280px;
+  }
+
+  .feed-card {
+    min-width: 220px;
+  }
+
+
+}
