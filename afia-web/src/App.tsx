@@ -35,6 +35,10 @@ import AdminDashboard from './components/admin/AdminDashboard'
 import MfaSetup from './pages/auth/MfaSetup'
 import LandingPage from './pages/LandingPage'
 
+// ── Legal Pages ──
+import TermsOfServicePage from './pages/legal/TermsOfServicePage'
+import PrivacyPolicyPage from './pages/legal/PrivacyPolicyPage'
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -46,6 +50,8 @@ export default function App() {
             <Route path="/showcase" element={<DesignShowcase />} />
             <Route path="/catalog" element={<CatalogPage />} />
             <Route path="/catalog/:productId" element={<ProductDetailPage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
             {/* ══════ AUTH ROUTES (Guest Only) ══════ */}
             <Route

@@ -16,6 +16,7 @@ export default function SignupPage() {
     const [role, setRole] = useState<RoleChoice>('BUYER')
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
+    const [acceptedTerms, setAcceptedTerms] = useState(false)
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
@@ -31,6 +32,10 @@ export default function SignupPage() {
         }
         if (password !== confirmPassword) {
             setError('Passwords do not match')
+            return
+        }
+        if (!acceptedTerms) {
+            setError('Please accept the Terms of Service and Privacy Policy to continue')
             return
         }
 
@@ -166,6 +171,29 @@ export default function SignupPage() {
                         ))}
                     </div>
 
+                    {/* Vendor Commission Notice */}
+                    {role === 'VENDOR' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mb-6 p-4 bg-gold/5 border border-gold/20 rounded-xl"
+                        >
+                            <div className="flex items-start gap-3">
+                                <Store className="w-5 h-5 text-gold mt-0.5 shrink-0" />
+                                <div>
+                                    <p className="text-sm font-semibold text-navy mb-1">Transparent Commission</p>
+                                    <p className="text-xs text-platinum-dark leading-relaxed">
+                                        Neoa charges a <strong className="text-navy">15% commission</strong> on each successful transaction.
+                                        No monthly fees, no setup costs, no hidden charges. You receive <strong className="text-navy">85%</strong> of every sale directly to your bank account.
+                                    </p>
+                                    <Link to="/terms" className="text-gold text-xs font-semibold hover:text-gold-dark mt-1 inline-block">
+                                        Read full Terms of Service →
+                                    </Link>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
                     {/* Error */}
                     {error && (
                         <motion.div
@@ -222,6 +250,26 @@ export default function SignupPage() {
                             autoComplete="new-password"
                             id="signup-confirm-password"
                         />
+
+                        {/* Terms of Service & Privacy Policy Consent */}
+                        <label className="flex items-start gap-2.5 cursor-pointer pt-2">
+                            <input
+                                type="checkbox"
+                                checked={acceptedTerms}
+                                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                                className="mt-1 accent-gold w-4 h-4 shrink-0 cursor-pointer"
+                                id="signup-terms-consent"
+                            />
+                            <span className="text-xs text-platinum-dark leading-relaxed">
+                                I agree to the{' '}
+                                <Link to="/terms" className="text-gold font-semibold hover:text-gold-dark">Terms of Service</Link>
+                                {' '}and{' '}
+                                <Link to="/privacy" className="text-gold font-semibold hover:text-gold-dark">Privacy Policy</Link>.
+                                {role === 'VENDOR' && (
+                                    <> I understand that Neoa charges a <strong className="text-navy">15% commission</strong> on each successful transaction.</>
+                                )}
+                            </span>
+                        </label>
 
                         <Button
                             type="submit"

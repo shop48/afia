@@ -1,29 +1,26 @@
+import { useNavigate } from 'react-router-dom'
+
 export default function Footer() {
   const year = new Date().getFullYear()
+  const navigate = useNavigate()
 
-  const columns = [
-    {
-      title: 'Company',
-      links: [
-        { label: 'Why Neoa', href: '#why-neoa' },
-        { label: 'How It Works', href: '#how-it-works' },
-        { label: 'Pricing', href: '#pricing' },
-        { label: 'FAQ', href: '#faq' },
-      ],
-    },
-    {
-      title: 'Legal',
-      links: [
-        { label: 'Terms of Service', href: '#' },
-        { label: 'Privacy Policy', href: '#' },
-      ],
-    },
+  const companyLinks = [
+    { label: 'Why Neoa', href: '#why-neoa', isAnchor: true },
+    { label: 'How It Works', href: '#how-it-works', isAnchor: true },
+    { label: 'FAQ', href: '#faq', isAnchor: true },
   ]
 
-  const scrollTo = (href: string) => {
-    if (href.startsWith('#')) {
+  const legalLinks = [
+    { label: 'Terms of Service', href: '/terms', isAnchor: false },
+    { label: 'Privacy Policy', href: '/privacy', isAnchor: false },
+  ]
+
+  const handleClick = (href: string, isAnchor: boolean) => {
+    if (isAnchor) {
       const el = document.querySelector(href)
       el?.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      navigate(href)
     }
   }
 
@@ -61,31 +58,55 @@ export default function Footer() {
 
           {/* Link columns */}
           <div className="flex gap-16">
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h4
-                  className="text-sm font-semibold mb-4"
-                  style={{ color: 'white', fontFamily: 'var(--font-body)' }}
-                >
-                  {col.title}
-                </h4>
-                <ul className="space-y-2.5" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {col.links.map((link) => (
-                    <li key={link.label}>
-                      <button
-                        onClick={() => scrollTo(link.href)}
-                        className="bg-transparent border-none cursor-pointer text-sm p-0"
-                        style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-body)' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = '#C5A059')}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
-                      >
-                        {link.label}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {/* Company */}
+            <div>
+              <h4
+                className="text-sm font-semibold mb-4"
+                style={{ color: 'white', fontFamily: 'var(--font-body)' }}
+              >
+                Company
+              </h4>
+              <ul className="space-y-2.5" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {companyLinks.map((link) => (
+                  <li key={link.label}>
+                    <button
+                      onClick={() => handleClick(link.href, link.isAnchor)}
+                      className="bg-transparent border-none cursor-pointer text-sm p-0"
+                      style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-body)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#C5A059')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
+                    >
+                      {link.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4
+                className="text-sm font-semibold mb-4"
+                style={{ color: 'white', fontFamily: 'var(--font-body)' }}
+              >
+                Legal
+              </h4>
+              <ul className="space-y-2.5" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {legalLinks.map((link) => (
+                  <li key={link.label}>
+                    <button
+                      onClick={() => handleClick(link.href, link.isAnchor)}
+                      className="bg-transparent border-none cursor-pointer text-sm p-0"
+                      style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-body)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#C5A059')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
+                    >
+                      {link.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
