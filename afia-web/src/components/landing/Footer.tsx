@@ -17,8 +17,10 @@ export default function Footer() {
 
   const handleClick = (href: string, isAnchor: boolean) => {
     if (isAnchor) {
-      const el = document.querySelector(href)
-      el?.scrollIntoView({ behavior: 'smooth' })
+      if (href && href !== '#' && href.length > 1) {
+        const el = document.querySelector(href)
+        el?.scrollIntoView({ behavior: 'smooth' })
+      }
     } else {
       navigate(href)
     }
