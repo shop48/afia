@@ -58,7 +58,7 @@
       },
       // Custom domain route — activated April 2026
       "routes": [
-        { "pattern": "api.neoahq.com/*", "zone_name": "neoahq.com" }
+        { "pattern": "api.neoa-gm.com/*", "zone_name": "neoa-gm.com" }
       ],
       "observability": {
         "enabled": true,
