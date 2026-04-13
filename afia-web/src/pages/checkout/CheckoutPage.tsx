@@ -236,10 +236,15 @@ export default function CheckoutPage() {
                                                     by {product.vendor.full_name}
                                                 </span>
                                             )}
-                                            {isVerified && (
+                                            {isVerified ? (
                                                 <span className="flex items-center gap-0.5 text-[10px] text-neoa-emerald font-medium">
                                                     <BadgeCheck className="w-3 h-3" />
-                                                    Verified
+                                                    Verified Seller
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-0.5 text-[10px] text-gold-dark font-medium">
+                                                    <BadgeCheck className="w-3 h-3" />
+                                                    New Seller
                                                 </span>
                                             )}
                                         </div>

@@ -4,8 +4,13 @@
 // Docs: https://docs.smileidentity.com/
 // ════════════════════════════════════════════
 
-const SMILEID_API_BASE = 'https://testapi.smileidentity.com' // Sandbox
-// Production: 'https://api.smileidentity.com'
+const SMILEID_SANDBOX_URL = 'https://testapi.smileidentity.com'
+const SMILEID_PRODUCTION_URL = 'https://api.smileidentity.com'
+
+/** Resolve the correct SmileID API base URL based on environment */
+export function getSmileIdBaseUrl(isProduction: boolean): string {
+    return isProduction ? SMILEID_PRODUCTION_URL : SMILEID_SANDBOX_URL
+}
 
 const REQUEST_TIMEOUT_MS = 30_000
 
@@ -120,7 +125,8 @@ async function smileIdFetch(
     endpoint: string,
     body: Record<string, unknown>,
     apiKey: string,
-    partnerId: string
+    partnerId: string,
+    baseUrl: string = SMILEID_SANDBOX_URL
 ): Promise<Response> {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
@@ -131,7 +137,7 @@ async function smileIdFetch(
     const signature = await generateSmileIdSignature(timestamp, apiKey, partnerId)
 
     try {
-        const response = await fetch(`${SMILEID_API_BASE}${endpoint}`, {
+        const response = await fetch(`${baseUrl}${endpoint}`, {
             method: 'POST',
             signal: controller.signal,
             headers: {
@@ -162,7 +168,8 @@ async function smileIdFetch(
 export async function submitEnhancedKyc(
     params: SmileIdKycRequest,
     apiKey: string,
-    callbackUrl: string
+    callbackUrl: string,
+    baseUrl?: string
 ): Promise<SmileIdJobResponse> {
     const jobId = `AFIA-KYC-${params.userId.slice(0, 8)}-${Date.now()}`
 
@@ -174,18 +181,17 @@ export async function submitEnhancedKyc(
             user_id: params.userId,
             job_type: 5, // 5 = Enhanced KYC
         },
-        id_info: {
-            country: params.country,
-            id_type: params.idType,
-            id_number: params.idNumber,
-            first_name: params.firstName || '',
-            last_name: params.lastName || '',
-            dob: params.dob || '',
-        },
+        // SmileID requires these at root level (not nested in id_info)
+        country: params.country,
+        id_type: params.idType,
+        id_number: params.idNumber,
+        first_name: params.firstName || '',
+        last_name: params.lastName || '',
+        dob: params.dob || '',
         callback_url: callbackUrl,
     }
 
-    const res = await smileIdFetch('/v1/id_verification', body, apiKey, params.partnerId)
+    const res = await smileIdFetch('/v1/id_verification', body, apiKey, params.partnerId, baseUrl)
 
     if (!res.ok) {
         const errText = await res.text()
@@ -214,7 +220,8 @@ export async function submitEnhancedKyc(
 export async function submitBiometricKyc(
     params: SmileIdKycRequest,
     apiKey: string,
-    callbackUrl: string
+    callbackUrl: string,
+    baseUrl?: string
 ): Promise<SmileIdJobResponse> {
     if (!params.selfieImage) {
         throw new Error('Selfie image is required for Biometric KYC')
@@ -230,13 +237,12 @@ export async function submitBiometricKyc(
             user_id: params.userId,
             job_type: 1, // 1 = Biometric KYC
         },
-        id_info: {
-            country: params.country,
-            id_type: params.idType,
-            id_number: params.idNumber,
-            first_name: params.firstName || '',
-            last_name: params.lastName || '',
-        },
+        // SmileID requires these at root level
+        country: params.country,
+        id_type: params.idType,
+        id_number: params.idNumber,
+        first_name: params.firstName || '',
+        last_name: params.lastName || '',
         images: [
             {
                 image_type_id: 2, // 2 = Selfie
@@ -246,7 +252,7 @@ export async function submitBiometricKyc(
         callback_url: callbackUrl,
     }
 
-    const res = await smileIdFetch('/v1/id_verification', body, apiKey, params.partnerId)
+    const res = await smileIdFetch('/v1/id_verification', body, apiKey, params.partnerId, baseUrl)
 
     if (!res.ok) {
         const errText = await res.text()
@@ -280,7 +286,8 @@ export async function submitDocumentVerification(
         idDocumentBackImage?: string  // Optional — base64-encoded back of ID
     },
     apiKey: string,
-    callbackUrl: string
+    callbackUrl: string,
+    baseUrl?: string
 ): Promise<SmileIdJobResponse> {
     if (!params.selfieImage) {
         throw new Error('Selfie image is required for Document Verification')
@@ -308,16 +315,15 @@ export async function submitDocumentVerification(
             user_id: params.userId,
             job_type: 6, // 6 = Document Verification
         },
-        id_info: {
-            country: params.country,
-            first_name: params.firstName || '',
-            last_name: params.lastName || '',
-        },
+        // SmileID requires these at root level
+        country: params.country,
+        first_name: params.firstName || '',
+        last_name: params.lastName || '',
         images,
         callback_url: callbackUrl,
     }
 
-    const res = await smileIdFetch('/v1/upload', body, apiKey, params.partnerId)
+    const res = await smileIdFetch('/v1/upload', body, apiKey, params.partnerId, baseUrl)
 
     if (!res.ok) {
         const errText = await res.text()
@@ -431,7 +437,8 @@ export async function getJobStatus(
     partnerId: string,
     jobId: string,
     userId: string,
-    apiKey: string
+    apiKey: string,
+    baseUrl?: string
 ): Promise<SmileIdVerificationResult | null> {
     const body: Record<string, unknown> = {
         partner_params: {
@@ -443,7 +450,7 @@ export async function getJobStatus(
         history: false,
     }
 
-    const res = await smileIdFetch('/v1/job_status', body, apiKey, partnerId)
+    const res = await smileIdFetch('/v1/job_status', body, apiKey, partnerId, baseUrl)
 
     if (!res.ok) return null
 

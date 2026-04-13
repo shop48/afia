@@ -24,6 +24,9 @@ export default function VendorProductsPage() {
     const [actionMenuId, setActionMenuId] = useState<string | null>(null)
 
     const isVerified = profile?.kyc_level === 'VERIFIED'
+    const MAX_TIER_0_PRODUCTS = 3
+    const activeProductCount = products.filter(p => p.is_active !== false).length
+    const canAddProduct = isVerified || activeProductCount < MAX_TIER_0_PRODUCTS
 
     // Fetch products on mount
     useEffect(() => {
@@ -91,7 +94,7 @@ export default function VendorProductsPage() {
                             {products.length} product{products.length !== 1 ? 's' : ''} listed
                         </p>
                     </div>
-                    {isVerified && (
+                    {canAddProduct && (
                         <button
                             onClick={() => { setEditingProduct(null); setShowForm(true) }}
                             className="flex items-center gap-2 px-5 py-2.5 bg-gold text-navy-dark font-semibold text-sm
@@ -99,11 +102,14 @@ export default function VendorProductsPage() {
                         >
                             <Plus className="w-4 h-4" />
                             Add Product
+                            {!isVerified && (
+                                <span className="text-xs opacity-70">({activeProductCount}/{MAX_TIER_0_PRODUCTS})</span>
+                            )}
                         </button>
                     )}
                 </div>
 
-                {/* KYC Gate for unverified vendors */}
+                {/* KYC Tier Info Banner */}
                 {!isVerified && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
@@ -114,13 +120,23 @@ export default function VendorProductsPage() {
                             <AlertCircle className="w-6 h-6 text-gold-dark" />
                         </div>
                         <div>
-                            <p className="text-base font-semibold text-navy">Identity Verification Required</p>
-                            <p className="text-sm text-platinum-dark mt-1 leading-relaxed">
-                                You must complete SmileID verification before you can list products.
-                                Verified vendors earn the <strong>"Verified by SmileID"</strong> trust badge, increasing buyer confidence.
+                            <p className="text-base font-semibold text-navy">
+                                {activeProductCount >= MAX_TIER_0_PRODUCTS
+                                    ? 'Product Limit Reached — Verify to Unlock'
+                                    : 'New Seller — Get Verified for More!'}
                             </p>
-                            <button className="mt-4 px-5 py-2.5 text-sm font-bold bg-gold text-navy-dark rounded-full hover:bg-gold-light transition-colors cursor-pointer">
-                                Start Verification →
+                            <p className="text-sm text-platinum-dark mt-1 leading-relaxed">
+                                {activeProductCount >= MAX_TIER_0_PRODUCTS ? (
+                                    <>You&apos;ve reached the <strong>{MAX_TIER_0_PRODUCTS}-product limit</strong> for unverified sellers. Complete identity verification to list unlimited products and earn the <strong>&quot;Verified by SmileID&quot;</strong> trust badge.</>
+                                ) : (
+                                    <>You can list up to <strong>{MAX_TIER_0_PRODUCTS} products</strong> before verification ({activeProductCount}/{MAX_TIER_0_PRODUCTS} used). Verified vendors get unlimited listings, higher order caps, and the <strong>&quot;Verified&quot;</strong> trust badge.</>
+                                )}
+                            </p>
+                            <button
+                                onClick={() => navigate('/vendor/settings')}
+                                className="mt-4 px-5 py-2.5 text-sm font-bold bg-gold text-navy-dark rounded-full hover:bg-gold-light transition-colors cursor-pointer"
+                            >
+                                {activeProductCount >= MAX_TIER_0_PRODUCTS ? 'Verify Now to Continue →' : 'Start Verification →'}
                             </button>
                         </div>
                     </motion.div>
@@ -140,7 +156,7 @@ export default function VendorProductsPage() {
                 )}
 
                 {/* Empty State */}
-                {!loading && products.length === 0 && isVerified && (
+                {!loading && products.length === 0 && (
                     <div className="bg-white rounded-2xl border border-platinum p-12 text-center">
                         <div className="w-16 h-16 rounded-2xl bg-platinum-light flex items-center justify-center mx-auto mb-4">
                             <Package className="w-8 h-8 text-platinum-dark" />
@@ -150,6 +166,7 @@ export default function VendorProductsPage() {
                         </h3>
                         <p className="text-platinum-dark text-sm max-w-sm mx-auto mb-6">
                             Create your first product listing to start selling globally with escrow protection.
+                            {!isVerified && <span className="block mt-1 text-gold-dark font-medium">You can list up to {MAX_TIER_0_PRODUCTS} products before verification.</span>}
                         </p>
                         <button
                             onClick={() => { setEditingProduct(null); setShowForm(true) }}

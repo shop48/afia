@@ -17,6 +17,7 @@ import {
 import {
   submitEnhancedKyc, submitBiometricKyc, submitDocumentVerification,
   parseSmileIdCallback, verifySmileIdWebhookSignature, getJobStatus,
+  getSmileIdBaseUrl,
   type SmileIdCallbackPayload
 } from './utils/smileid'
 // Module 10: Security Hardening
@@ -314,6 +315,9 @@ app.post('/api/checkout/initialize', async (c) => {
     return c.json({ error: trustBlock }, 403)
   }
 
+  // ── TIERED KYC: Check vendor's tier for transaction cap ──
+  // TIER_0 vendors have a per-order cap to limit risk before verification
+
   // 1. Fetch product details
   const { data: product, error: productError } = await supabase
     .from('products')
@@ -324,6 +328,31 @@ app.post('/api/checkout/initialize', async (c) => {
 
   if (productError || !product) {
     return c.json({ error: 'Product not found or inactive' }, 404)
+  }
+
+  // ── TIER_0 TRANSACTION CAP: Limit unverified vendor orders ──
+  const vendorProfile = Array.isArray(product.vendor) ? product.vendor[0] : product.vendor
+  {
+    const serviceSupabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_KEY)
+    const { data: vendorTier } = await serviceSupabase
+      .from('profiles')
+      .select('kyc_tier')
+      .eq('id', vendorProfile?.id)
+      .single()
+
+    if (vendorTier?.kyc_tier === 'TIER_0') {
+      const TIER_0_CAP_NGN = 50000 // ₦50,000 per order for unverified vendors
+      const TIER_0_CAP_USD = 35    // $35 USD equivalent
+      const productCurrencyCheck = product.currency || 'NGN'
+      const cap = productCurrencyCheck === 'NGN' ? TIER_0_CAP_NGN : TIER_0_CAP_USD
+      const totalCheck = Number(product.base_price) * qty
+      if (totalCheck > cap) {
+        const capDisplay = productCurrencyCheck === 'NGN' ? '₦50,000' : '$35'
+        return c.json({
+          error: `This vendor has not completed identity verification yet. Orders from unverified vendors are capped at ${capDisplay}. The vendor needs to complete KYC verification for higher-value orders.`,
+        }, 403)
+      }
+    }
   }
 
   // 2. Prevent self-purchase
@@ -971,7 +1000,14 @@ app.post('/api/webhooks/smileid', async (c) => {
 
   const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_KEY)
 
-  // Update the user's KYC level based on verification result
+  // Update the user's KYC level and tier based on verification result
+  // Fetch current profile to determine verification method
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('kyc_method')
+    .eq('id', userId)
+    .single()
+
   const updatePayload: Record<string, unknown> = {
     smileid_job_id: result.jobId,
   }
@@ -980,10 +1016,14 @@ app.post('/api/webhooks/smileid', async (c) => {
     updatePayload.kyc_level = 'VERIFIED'
     updatePayload.kyc_verified_at = new Date().toISOString()
     updatePayload.kyc_rejection_reason = null
-    console.log(`✅ SmileID: User ${userId} KYC VERIFIED (job: ${result.jobId})`)
+    // Set tier based on verification method: biometric = TIER_2, enhanced/doc = TIER_1
+    const method = userProfile?.kyc_method || ''
+    updatePayload.kyc_tier = method === 'biometric_kyc' ? 'TIER_2' : 'TIER_1'
+    console.log(`✅ SmileID: User ${userId} KYC VERIFIED → ${updatePayload.kyc_tier} (job: ${result.jobId})`)
   } else {
     updatePayload.kyc_level = 'REJECTED'
     updatePayload.kyc_rejection_reason = result.resultText || `Failed: ${result.resultCode}`
+    // Keep TIER_0 on rejection
     console.warn(`❌ SmileID: User ${userId} KYC REJECTED — ${result.resultText} (code: ${result.resultCode})`)
   }
 
@@ -1327,12 +1367,40 @@ app.post('/api/kyc/submit', async (c) => {
   // Check existing KYC status
   const { data: profile } = await supabase
     .from('profiles')
-    .select('kyc_level, smileid_job_id')
+    .select('kyc_level, smileid_job_id, kyc_tier')
     .eq('id', user.id)
     .single()
 
   if (profile?.kyc_level === 'VERIFIED') {
     return c.json({ error: 'KYC already verified' }, 409)
+  }
+
+  // ── DUPLICATE ID PREVENTION: Hash ID number and check for existing use ──
+  if (idNumber && isEnhancedKycCountry) {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(idNumber.trim().toUpperCase())
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const idHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+
+    const serviceSupabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_KEY)
+    const { data: existingUser } = await serviceSupabase
+      .from('profiles')
+      .select('id, kyc_level')
+      .eq('kyc_id_hash', idHash)
+      .neq('id', user.id)
+      .maybeSingle()
+
+    if (existingUser?.kyc_level === 'VERIFIED') {
+      console.warn(`⚠️ Duplicate ID attempt: user ${user.id} tried ID already verified on ${existingUser.id}`)
+      return c.json({ error: 'This ID number is already verified on another account. If you believe this is an error, please contact support.' }, 409)
+    }
+
+    // Store the hash for future dedup checks
+    await serviceSupabase
+      .from('profiles')
+      .update({ kyc_id_hash: idHash })
+      .eq('id', user.id)
   }
 
   // Build callback URL — use the Worker's own origin, not the frontend
@@ -1357,12 +1425,18 @@ app.post('/api/kyc/submit', async (c) => {
 
     console.log(`🧪 [Sandbox Mock] KYC ${isVerified ? 'VERIFIED' : 'REJECTED'} for user ${user.id} (idNumber: ${idNumber})`)
 
+    // Determine tier based on verification method
+    const newTier = isVerified
+      ? (kycMethod === 'biometric_kyc' ? 'TIER_2' : 'TIER_1')
+      : 'TIER_0'
+
     await supabase
       .from('profiles')
       .update({
         smileid_job_id: mockJobId,
         kyc_submitted_at: new Date().toISOString(),
         kyc_level: isVerified ? 'VERIFIED' : 'REJECTED',
+        kyc_tier: newTier,
         kyc_method: kycMethod,
         kyc_country: country,
         kyc_verified_at: isVerified ? new Date().toISOString() : null,
@@ -1374,12 +1448,14 @@ app.post('/api/kyc/submit', async (c) => {
       message: isVerified ? 'KYC verification successful (sandbox mock)' : 'KYC verification rejected (sandbox mock)',
       job_id: mockJobId,
       status: isVerified ? 'VERIFIED' : 'REJECTED',
+      tier: newTier,
       method: kycMethod,
       sandbox_mock: true,
     })
   }
 
   // ── LIVE SmileID API CALL ──
+  const smileIdBaseUrl = getSmileIdBaseUrl(c.env.ENVIRONMENT === 'production')
   try {
     let result
 
@@ -1398,7 +1474,7 @@ app.post('/api/kyc/submit', async (c) => {
           lastName,
           dob,
           selfieImage,
-        }, apiKey, callbackUrl)
+        }, apiKey, callbackUrl, smileIdBaseUrl)
       } else {
         // Enhanced KYC (ID number only)
         result = await submitEnhancedKyc({
@@ -1411,7 +1487,7 @@ app.post('/api/kyc/submit', async (c) => {
           firstName,
           lastName,
           dob,
-        }, apiKey, callbackUrl)
+        }, apiKey, callbackUrl, smileIdBaseUrl)
       }
     } else {
       // ── INTERNATIONAL: Document Verification (passport/ID photo + selfie) ──
@@ -1424,7 +1500,7 @@ app.post('/api/kyc/submit', async (c) => {
         selfieImage: selfieImage!,
         idDocumentFrontImage: idDocumentFrontImage!,
         idDocumentBackImage,
-      }, apiKey, callbackUrl)
+      }, apiKey, callbackUrl, smileIdBaseUrl)
     }
 
     // Store the job ID for tracking
@@ -1447,6 +1523,7 @@ app.post('/api/kyc/submit', async (c) => {
       message: 'KYC verification submitted',
       job_id: result.smile_job_id,
       status: 'PENDING',
+      tier: profile?.kyc_tier || 'TIER_0',
       method: isEnhancedKycCountry ? 'enhanced_kyc' : 'document_verification',
     })
   } catch (err) {
@@ -1467,7 +1544,7 @@ app.get('/api/kyc/status', async (c) => {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('kyc_level, smileid_job_id, kyc_submitted_at, kyc_verified_at, kyc_rejection_reason')
+    .select('kyc_level, kyc_tier, smileid_job_id, kyc_submitted_at, kyc_verified_at, kyc_rejection_reason')
     .eq('id', user.id)
     .single()
 
@@ -1478,29 +1555,43 @@ app.get('/api/kyc/status', async (c) => {
   // If pending and we have config, try polling SmileID
   if (profile.kyc_level === 'PENDING' && profile.smileid_job_id && c.env.SMILEID_PARTNER_ID && c.env.SMILEID_API_KEY) {
     try {
+      const smileIdBaseUrl = getSmileIdBaseUrl(c.env.ENVIRONMENT === 'production')
       const result = await getJobStatus(
         c.env.SMILEID_PARTNER_ID,
         profile.smileid_job_id,
         user.id,
-        c.env.SMILEID_API_KEY
+        c.env.SMILEID_API_KEY,
+        smileIdBaseUrl
       )
 
       if (result) {
-        // Update profile based on poll result
+        // Update profile based on poll result — MUST set kyc_tier alongside kyc_level
         const serviceSupabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_KEY)
+
+        // Fetch kyc_method to determine tier
+        const { data: methodProfile } = await serviceSupabase
+          .from('profiles')
+          .select('kyc_method')
+          .eq('id', user.id)
+          .single()
+        const method = methodProfile?.kyc_method || ''
+
         if (result.verified) {
+          const newTier = method === 'biometric_kyc' ? 'TIER_2' : 'TIER_1'
           await serviceSupabase.from('profiles').update({
             kyc_level: 'VERIFIED',
+            kyc_tier: newTier,
             kyc_verified_at: new Date().toISOString(),
             kyc_rejection_reason: null,
           }).eq('id', user.id)
-          return c.json({ kyc_level: 'VERIFIED', verified: true })
+          console.log(`✅ SmileID poll: User ${user.id} KYC VERIFIED → ${newTier}`)
+          return c.json({ kyc_level: 'VERIFIED', kyc_tier: newTier, verified: true })
         } else {
           await serviceSupabase.from('profiles').update({
             kyc_level: 'REJECTED',
             kyc_rejection_reason: result.resultText,
           }).eq('id', user.id)
-          return c.json({ kyc_level: 'REJECTED', reason: result.resultText })
+          return c.json({ kyc_level: 'REJECTED', kyc_tier: 'TIER_0', reason: result.resultText })
         }
       }
     } catch (err) {
@@ -1511,6 +1602,7 @@ app.get('/api/kyc/status', async (c) => {
 
   return c.json({
     kyc_level: profile.kyc_level || 'NONE',
+    kyc_tier: profile.kyc_tier || 'TIER_0',
     job_id: profile.smileid_job_id,
     submitted_at: profile.kyc_submitted_at,
     verified_at: profile.kyc_verified_at,

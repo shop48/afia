@@ -19,6 +19,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787'
 
 interface KycStatus {
     kyc_level: string
+    kyc_tier?: string
     job_id?: string
     submitted_at?: string
     verified_at?: string
@@ -155,6 +156,11 @@ export default function VendorSettingsPage() {
                                 <div className="flex items-center gap-2 mb-2">
                                     <UserCheck className="w-5 h-5 text-afia-emerald" />
                                     <span className="text-sm font-semibold text-navy">Identity Verified</span>
+                                    {(kycStatus?.kyc_tier || profile?.kyc_tier) && (
+                                        <span className="px-2 py-0.5 bg-afia-emerald/10 rounded-full text-[10px] font-bold text-afia-emerald uppercase">
+                                            {kycStatus?.kyc_tier || profile?.kyc_tier}
+                                        </span>
+                                    )}
                                 </div>
                                 <p className="text-xs text-platinum-dark">
                                     Your identity was verified on{' '}
@@ -162,7 +168,10 @@ export default function VendorSettingsPage() {
                                         ? new Date(kycStatus.verified_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })
                                         : 'a previous date'
                                     }.
-                                    You have full access to all platform features.
+                                    {(kycStatus?.kyc_tier || profile?.kyc_tier) === 'TIER_1'
+                                        ? ' You have enhanced access. Complete biometric verification to unlock TIER_2 (unlimited, fastest payouts).'
+                                        : ' You have full access to all platform features.'
+                                    }
                                 </p>
                             </div>
                         )}
@@ -204,9 +213,11 @@ export default function VendorSettingsPage() {
 
                         {kycLevel === 'NONE' && (
                             <div className="p-4 bg-platinum-light rounded-xl">
+                                <p className="text-xs text-platinum-dark mb-2">
+                                    <strong>Current Tier: TIER_0</strong> — You can list up to 3 products and receive orders up to ₦50,000.
+                                </p>
                                 <p className="text-xs text-platinum-dark mb-3">
-                                    Verify your identity to unlock higher transaction limits and build trust with buyers.
-                                    Verified vendors receive a badge on their products.
+                                    Verify your identity to unlock unlimited listings, higher transaction limits, and the trust badge.
                                 </p>
                                 <ul className="text-xs text-platinum-dark space-y-1 mb-4">
                                     <li className="flex items-center gap-2">

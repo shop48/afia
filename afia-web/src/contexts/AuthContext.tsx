@@ -15,6 +15,7 @@ export interface Profile {
     full_name: string | null
     role: UserRole
     kyc_level: KycStatus
+    kyc_tier: 'TIER_0' | 'TIER_1' | 'TIER_2'
     settlement_currency: string
     wise_recipient_id: string | null
     trust_score: number | null
