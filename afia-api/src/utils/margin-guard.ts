@@ -93,13 +93,97 @@ function getFallbackFxRate(from: string, to: string): number | null {
 /**
  * Calculate the platform fee (15%) and vendor payout (85%).
  */
+export const PLATFORM_FEE_RATE = 0.15   // 15% platform commission
+export const MIN_PROFIT_FLOOR = 0.10    // 10% minimum net profit
+
 export function calculateFees(grossAmount: number): {
     feeAmount: number
     netPayout: number
 } {
-    const feeAmount = Math.round(grossAmount * 0.15 * 100) / 100
+    const feeAmount = Math.round(grossAmount * PLATFORM_FEE_RATE * 100) / 100
     const netPayout = Math.round((grossAmount - feeAmount) * 100) / 100
     return { feeAmount, netPayout }
+}
+
+/**
+ * 10% Net Profit Floor Check.
+ * 
+ * Business logic: We collect 15% commission to cover ALL operational costs
+ * (Paystack fees, FX costs, etc.). After deducting these costs, our net profit
+ * must remain >= 10% of the gross transaction amount.
+ *
+ * Costs deducted:
+ * - Paystack transfer fee: ₦50 flat per NGN transfer (5000 kobo)
+ * - FX conversion spread: estimated percentage when USD→NGN via Wise
+ * 
+ * @param grossAmount - Total transaction amount in base currency
+ * @param currency - Transaction currency (NGN, USD, etc.)
+ * @param payoutRail - 'PAYSTACK_NGN' or 'WISE_GLOBAL'
+ * @param fxRateAtCheckout - FX rate when buyer paid (for cross-currency orders)
+ * @param currentFxRate - Current live FX rate (for drift calculation)
+ */
+export function checkProfitFloor(params: {
+    grossAmount: number
+    currency: string
+    payoutRail: string
+    fxRateAtCheckout?: number | null
+    currentFxRate?: number | null
+}): {
+    passed: boolean
+    netProfitPercent: number
+    platformFee: number
+    operationalCosts: number
+    netProfit: number
+    details: string
+} {
+    const { grossAmount, currency, payoutRail, fxRateAtCheckout, currentFxRate } = params
+
+    // Platform commission (15% of gross)
+    const platformFee = Math.round(grossAmount * PLATFORM_FEE_RATE * 100) / 100
+
+    // Calculate operational costs
+    let operationalCosts = 0
+    const costBreakdown: string[] = []
+
+    // 1. Paystack transfer fee: ₦50 per NGN transfer
+    if (payoutRail === 'PAYSTACK_NGN') {
+        // If transaction is in NGN, deduct ₦50 directly
+        if (currency === 'NGN') {
+            operationalCosts += 50  // ₦50
+            costBreakdown.push('Paystack transfer: ₦50')
+        } else {
+            // If transaction is in USD, convert ₦50 to USD equivalent
+            const rate = currentFxRate || fxRateAtCheckout || 1580
+            const feeInUsd = 50 / rate
+            operationalCosts += feeInUsd
+            costBreakdown.push(`Paystack transfer: ~$${feeInUsd.toFixed(4)} (₦50 at ${rate})`)
+        }
+    }
+
+    // 2. Wise FX conversion spread (~0.5-1% for USD→NGN)
+    if (payoutRail === 'WISE_GLOBAL' && fxRateAtCheckout && currentFxRate) {
+        const fxSpread = Math.abs(currentFxRate - fxRateAtCheckout) / fxRateAtCheckout
+        const fxCost = grossAmount * fxSpread
+        operationalCosts += fxCost
+        costBreakdown.push(`FX spread: ${(fxSpread * 100).toFixed(2)}% = ${currency} ${fxCost.toFixed(2)}`)
+    }
+
+    // Net profit after costs
+    const netProfit = platformFee - operationalCosts
+    const netProfitPercent = grossAmount > 0 ? netProfit / grossAmount : 0
+
+    const passed = netProfitPercent >= MIN_PROFIT_FLOOR
+
+    return {
+        passed,
+        netProfitPercent: Math.round(netProfitPercent * 10000) / 10000, // 4 decimal places
+        platformFee,
+        operationalCosts: Math.round(operationalCosts * 100) / 100,
+        netProfit: Math.round(netProfit * 100) / 100,
+        details: passed
+            ? `Profit floor OK: ${(netProfitPercent * 100).toFixed(2)}% net (min ${MIN_PROFIT_FLOOR * 100}%)`
+            : `⚠️ BELOW PROFIT FLOOR: ${(netProfitPercent * 100).toFixed(2)}% net < ${MIN_PROFIT_FLOOR * 100}% min. Costs: ${costBreakdown.join(', ')}`,
+    }
 }
 
 /**
@@ -117,3 +201,4 @@ export function getSupportedCurrencies(): Array<{ code: string; rate: number }> 
 export function cleanupRateCache(): void {
     pruneRateCache()
 }
+

@@ -475,3 +475,110 @@ export function generateReference(): string {
     const random = crypto.randomUUID().slice(0, 8)
     return `AFIA-${timestamp}-${random}`
 }
+
+// ══════════════════════════════════════════════
+// 9. TRANSFER STATUS CHECK
+// ══════════════════════════════════════════════
+
+/**
+ * Paystack flat transfer fee in kobo (₦50 per NGN transfer).
+ * Used by Margin Guard to calculate net profit floor.
+ */
+export const PAYSTACK_TRANSFER_FEE_KOBO = 5000 // ₦50
+
+/**
+ * Get the status of a Paystack transfer by transfer code.
+ * Use this to verify transfer status if webhook is delayed.
+ */
+export async function getTransferStatus(
+    transferCode: string,
+    secretKey: string
+): Promise<{ status: string; amount: number; currency: string; reference: string }> {
+    const response = await paystackFetch(
+        `/transfer/verify/${encodeURIComponent(transferCode)}`,
+        secretKey
+    )
+
+    if (!response.ok) {
+        const text = await response.text()
+        throw new Error(`Paystack transfer verify failed (${response.status}): ${text}`)
+    }
+
+    const result = await response.json() as {
+        status: boolean
+        message: string
+        data: { status: string; amount: number; currency: string; reference: string }
+    }
+
+    if (!result.status) {
+        throw new Error(`Paystack transfer verify failed: ${result.message}`)
+    }
+
+    return result.data
+}
+
+// ══════════════════════════════════════════════
+// 10. BULK TRANSFERS (Batch Payout)
+// Docs: https://paystack.com/docs/transfers/bulk-transfers
+// ══════════════════════════════════════════════
+
+export interface BulkTransferItem {
+    amount: number           // in kobo
+    recipient: string        // recipient_code from createTransferRecipient
+    reference: string        // unique reference (idempotency key)
+    reason?: string
+}
+
+export interface BulkTransferResult {
+    status: boolean
+    message: string
+    data: Array<{
+        reference: string
+        recipient: string
+        amount: number
+        status: string
+        transfer_code: string
+    }>
+}
+
+/**
+ * Initiate a bulk transfer to multiple vendors in a single API call.
+ * Paystack sends a separate `transfer.success` webhook for EACH recipient.
+ * 
+ * Max 100 transfers per batch (Paystack limit).
+ * Each transfer uses your Paystack balance as the source.
+ */
+export async function initiateBulkTransfer(
+    transfers: BulkTransferItem[],
+    secretKey: string
+): Promise<BulkTransferResult> {
+    if (transfers.length > 100) {
+        throw new Error('Paystack bulk transfer limit: max 100 per batch')
+    }
+
+    const response = await paystackFetch('/transfer/bulk', secretKey, {
+        method: 'POST',
+        body: JSON.stringify({
+            source: 'balance',
+            transfers: transfers.map(t => ({
+                amount: t.amount,
+                recipient: t.recipient,
+                reference: t.reference,
+                reason: t.reason || 'Neoa Marketplace Payout',
+            })),
+        }),
+    })
+
+    if (!response.ok) {
+        const text = await response.text()
+        throw new Error(`Paystack bulk transfer failed (${response.status}): ${text}`)
+    }
+
+    const result = await response.json() as BulkTransferResult
+
+    if (!result.status) {
+        throw new Error(`Paystack bulk transfer failed: ${result.message}`)
+    }
+
+    return result
+}

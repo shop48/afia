@@ -25,6 +25,7 @@ interface PayoutItem {
     vendor_bank_code: string | null
     vendor_bank_name: string | null
     vendor_account_holder: string | null
+    vendor_paystack_recipient: string | null
     escrow_id: string
     gross_amount: number
     fee_amount: number
@@ -43,6 +44,11 @@ interface PayoutItem {
     total_amount: number
     order_currency: string
     quantity: number
+    // Transfer tracking (Paystack Manual Payouts)
+    paystack_transfer_code: string | null
+    paystack_transfer_status: string | null
+    profit_floor_check: boolean | null
+    net_profit_percent: number | null
 }
 
 interface BatchResult {
@@ -487,6 +493,43 @@ export default function PayoutQueue() {
                                                         <p className="text-platinum-dark">Settlement</p>
                                                         <p className="text-navy mt-0.5">{item.settlement_currency}</p>
                                                     </div>
+                                                    {/* Transfer Status (for RELEASE_PENDING payouts) */}
+                                                    {item.paystack_transfer_code && (
+                                                        <div>
+                                                            <p className="text-platinum-dark">Transfer Status</p>
+                                                            <p className={`mt-0.5 font-mono text-xs ${
+                                                                item.paystack_transfer_status === 'success' ? 'text-emerald-600' :
+                                                                item.paystack_transfer_status === 'failed' ? 'text-red-600' :
+                                                                item.paystack_transfer_status === 'reversed' ? 'text-orange-600' :
+                                                                'text-amber-600'
+                                                            }`}>
+                                                                {item.paystack_transfer_status?.toUpperCase() || 'PENDING'}
+                                                                <span className="text-platinum-dark ml-1">({item.paystack_transfer_code})</span>
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    {/* Vault Status */}
+                                                    <div>
+                                                        <p className="text-platinum-dark">Vault Status</p>
+                                                        <p className={`mt-0.5 font-semibold ${
+                                                            item.vault_status === 'RELEASE_PENDING' ? 'text-amber-600' :
+                                                            item.vault_status === 'LOCKED' ? 'text-navy' :
+                                                            item.vault_status === 'RELEASED' ? 'text-emerald-600' :
+                                                            'text-red-600'
+                                                        }`}>
+                                                            {item.vault_status === 'RELEASE_PENDING' ? '⏳ RELEASE PENDING' : item.vault_status}
+                                                        </p>
+                                                    </div>
+                                                    {/* Net Profit Floor */}
+                                                    {item.net_profit_percent != null && (
+                                                        <div>
+                                                            <p className="text-platinum-dark">Net Profit</p>
+                                                            <p className={`mt-0.5 font-mono ${item.profit_floor_check ? 'text-emerald-600' : 'text-red-600'}`}>
+                                                                {(item.net_profit_percent * 100).toFixed(2)}%
+                                                                {!item.profit_floor_check && ' ⚠️ Below 10%'}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* ═══ INTERNATIONAL BANK DETAILS (for manual Wise payout) ═══ */}
