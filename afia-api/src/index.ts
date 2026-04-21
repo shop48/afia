@@ -49,6 +49,8 @@ type Bindings = {
   // Module 10: Security Hardening
   ENVIRONMENT?: string            // 'development' | 'production' (controls CORS localhost fallback)
   REQUIRE_MFA?: string            // 'true' to enforce MFA for admin routes
+  // KYC Provider Mode: 'smileid' (default) | 'admin_manual'
+  KYC_PROVIDER?: string
 }
 
 interface AuthUser {
@@ -1296,6 +1298,36 @@ app.post('/api/kyc/submit', async (c) => {
   const user = c.get('user')
   const supabase = c.get('supabase')
 
+  // ── ADMIN MANUAL MODE: Skip vendor API, queue for admin review ──
+  const kycProvider = c.env.KYC_PROVIDER || 'smileid'
+  if (kycProvider === 'admin_manual') {
+    let body: { country?: string; idType?: string; idNumber?: string; firstName?: string; lastName?: string }
+    try { body = await c.req.json() } catch { return c.json({ error: 'Invalid JSON body' }, 400) }
+
+    const { country, idType, idNumber, firstName, lastName } = body
+    if (!country) return c.json({ error: 'Country is required' }, 400)
+
+    const serviceSupabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_KEY)
+    await serviceSupabase
+      .from('profiles')
+      .update({
+        kyc_level: 'PENDING',
+        kyc_provider: 'admin_manual',
+        kyc_method: 'admin_manual',
+        kyc_country: country,
+        kyc_submitted_at: new Date().toISOString(),
+        kyc_admin_notes: `Submitted: ${idType || 'N/A'} / ${firstName || ''} ${lastName || ''} / ${country}`,
+      })
+      .eq('id', user.id)
+
+    return c.json({
+      message: 'Your identity documents have been submitted for admin review',
+      status: 'PENDING_REVIEW',
+      provider: 'admin_manual',
+    })
+  }
+
+  // ── SMILEID MODE: Automated verification via SmileID API ──
   // Check that SmileID is configured
   const partnerId = c.env.SMILEID_PARTNER_ID
   const apiKey = c.env.SMILEID_API_KEY
@@ -3190,6 +3222,145 @@ app.post('/api/admin/vendors/:id/treasury-toggle', async (c) => {
   })
 
   return c.json({ message: `Treasury mode set to ${mode}` })
+})
+
+// ══════════════════════════════════════════════
+// ADMIN — KYC MANUAL VERIFICATION
+// GET  /api/admin/kyc/pending — List vendors awaiting admin review
+// POST /api/admin/kyc/verify  — Admin approves/rejects a vendor
+// ══════════════════════════════════════════════
+
+// GET /api/admin/kyc/pending — List all vendors with PENDING admin_manual KYC
+app.get('/api/admin/kyc/pending', async (c) => {
+  const serviceSupabase = c.get('serviceSupabase')
+
+  const { data: pending, error } = await serviceSupabase
+    .from('profiles')
+    .select('id, full_name, email:id, kyc_level, kyc_tier, kyc_provider, kyc_method, kyc_country, kyc_submitted_at, kyc_admin_notes, created_at')
+    .eq('role', 'VENDOR')
+    .eq('kyc_level', 'PENDING')
+    .order('kyc_submitted_at', { ascending: true })
+
+  if (error) {
+    return c.json({ error: 'Failed to fetch pending KYC reviews' }, 500)
+  }
+
+  return c.json({ vendors: pending || [] })
+})
+
+// POST /api/admin/kyc/verify — Admin manually approves or rejects a vendor
+app.post('/api/admin/kyc/verify', async (c) => {
+  const user = c.get('user')
+  const serviceSupabase = c.get('serviceSupabase')
+
+  // Only SUPER_ADMIN can manually verify vendors
+  const { data: adminProfile } = await serviceSupabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (adminProfile?.role !== 'SUPER_ADMIN') {
+    return c.json({ error: 'Only Super Admins can perform manual KYC verification' }, 403)
+  }
+
+  let body: { vendorId?: string; action?: string; tier?: string; notes?: string }
+  try { body = await c.req.json() } catch { return c.json({ error: 'Invalid JSON body' }, 400) }
+
+  const { vendorId, action, tier, notes } = body
+
+  // Validate inputs
+  if (!vendorId || !isValidUUID(vendorId)) {
+    return c.json({ error: 'Valid vendorId is required' }, 400)
+  }
+  if (!action || !['approve', 'reject'].includes(action)) {
+    return c.json({ error: 'action must be "approve" or "reject"' }, 400)
+  }
+  if (!notes || notes.trim().length < 5) {
+    return c.json({ error: 'Admin notes are required (min 5 characters) — explain your decision' }, 400)
+  }
+
+  // Block self-verification
+  if (vendorId === user.id) {
+    return c.json({ error: 'You cannot verify your own account' }, 403)
+  }
+
+  // Fetch vendor profile
+  const { data: vendor } = await serviceSupabase
+    .from('profiles')
+    .select('id, full_name, role, kyc_level, kyc_tier')
+    .eq('id', vendorId)
+    .single()
+
+  if (!vendor || vendor.role !== 'VENDOR') {
+    return c.json({ error: 'Vendor not found' }, 404)
+  }
+
+  if (action === 'approve') {
+    const approvedTier = tier === 'TIER_2' ? 'TIER_2' : 'TIER_1'
+
+    const { error: updateError } = await serviceSupabase
+      .from('profiles')
+      .update({
+        kyc_level: 'VERIFIED',
+        kyc_tier: approvedTier,
+        kyc_provider: 'admin_manual',
+        kyc_method: 'admin_manual',
+        kyc_verified_at: new Date().toISOString(),
+        kyc_admin_notes: `[APPROVED by admin ${user.id}] ${notes}`,
+        kyc_rejection_reason: null,
+      })
+      .eq('id', vendorId)
+
+    if (updateError) {
+      console.error('Admin KYC approve error:', updateError)
+      return c.json({ error: 'Failed to approve vendor' }, 500)
+    }
+
+    // Audit log
+    await logAuditAction(serviceSupabase, {
+      adminId: user.id,
+      action: 'KYC_MANUAL_APPROVE',
+      targetType: 'vendor',
+      targetId: vendorId,
+      metadata: { vendor_name: vendor.full_name, tier: approvedTier, notes },
+    })
+
+    console.log(`🛡️ ADMIN KYC: Vendor ${vendor.full_name} (${vendorId}) APPROVED → ${approvedTier} by admin ${user.id}`)
+    return c.json({ message: `Vendor ${vendor.full_name} verified as ${approvedTier}`, tier: approvedTier })
+  }
+
+  if (action === 'reject') {
+    const { error: updateError } = await serviceSupabase
+      .from('profiles')
+      .update({
+        kyc_level: 'REJECTED',
+        kyc_tier: 'TIER_0',
+        kyc_provider: 'admin_manual',
+        kyc_admin_notes: `[REJECTED by admin ${user.id}] ${notes}`,
+        kyc_rejection_reason: notes,
+      })
+      .eq('id', vendorId)
+
+    if (updateError) {
+      console.error('Admin KYC reject error:', updateError)
+      return c.json({ error: 'Failed to reject vendor' }, 500)
+    }
+
+    // Audit log
+    await logAuditAction(serviceSupabase, {
+      adminId: user.id,
+      action: 'KYC_MANUAL_REJECT',
+      targetType: 'vendor',
+      targetId: vendorId,
+      metadata: { vendor_name: vendor.full_name, reason: notes },
+    })
+
+    console.log(`🛡️ ADMIN KYC: Vendor ${vendor.full_name} (${vendorId}) REJECTED by admin ${user.id}: ${notes}`)
+    return c.json({ message: `Vendor ${vendor.full_name} verification rejected` })
+  }
+
+  return c.json({ error: 'Invalid action' }, 400)
 })
 
 // ══════════════════════════════════════════════
