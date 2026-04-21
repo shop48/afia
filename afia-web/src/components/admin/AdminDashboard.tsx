@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import PayoutQueue from './PayoutQueue'
 import DisputeArbitration from './DisputeArbitration'
 import VendorManagement from './VendorManagement'
+import KycReview from './KycReview'
 import BuyerManagement from './BuyerManagement'
 import AnalyticsOverview from './AnalyticsOverview'
 import AuditLog from './AuditLog'
@@ -11,8 +12,8 @@ import { useAuth } from '../../contexts/AuthContext'
 
 // ═══════════════════════════════════════════════
 // MODULE 7: ADMIN DASHBOARD (GOD MODE)
-// 6-section hub: Payouts, Disputes, Vendors,
-// Buyers, Analytics, Audit Log
+// 7-section hub: Payouts, Disputes, Vendors,
+// KYC Review, Buyers, Analytics, Audit Log
 // ═══════════════════════════════════════════════
 
 export default function AdminDashboard() {
@@ -25,6 +26,8 @@ export default function AdminDashboard() {
                 return <DisputeArbitration />
             case '/admin/vendors':
                 return <VendorManagement />
+            case '/admin/kyc-review':
+                return <KycReview />
             case '/admin/buyers':
                 return <BuyerManagement />
             case '/admin/analytics':

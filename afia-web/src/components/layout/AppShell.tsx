@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
     LayoutDashboard, ShoppingBag, Package, Shield,
     Menu, X, LogOut, ChevronRight,
-    AlertTriangle, Users, BarChart3, ScrollText, Settings,
+    AlertTriangle, Users, BarChart3, ScrollText, Settings, UserCheck,
 } from 'lucide-react'
 import NotificationCenter from '../notifications/NotificationCenter'
 
@@ -73,6 +73,7 @@ const ADMIN_LINKS: SidebarLink[] = [
     { label: 'Payout Gate', icon: <Shield className="w-5 h-5" />, path: '/admin' },
     { label: 'Disputes', icon: <AlertTriangle className="w-5 h-5" />, path: '/admin/disputes' },
     { label: 'Vendors', icon: <Users className="w-5 h-5" />, path: '/admin/vendors' },
+    { label: 'KYC Review', icon: <UserCheck className="w-5 h-5" />, path: '/admin/kyc-review' },
     { label: 'Buyers', icon: <ShoppingBag className="w-5 h-5" />, path: '/admin/buyers' },
     { label: 'Analytics', icon: <BarChart3 className="w-5 h-5" />, path: '/admin/analytics' },
     { label: 'Audit Log', icon: <ScrollText className="w-5 h-5" />, path: '/admin/audit-log' },
