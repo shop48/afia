@@ -1,0 +1,271 @@
+Test ID,Module,Feature Area,User Role,Login Email,Test Title,Steps to Execute,Expected Result,Pass/Fail,Tester Notes,Improvement Suggestions
+M1-01,Module 1: Design System,Landing Page,Guest (No Login),,Landing page loads correctly,"1. Open the app URL (http://localhost:5173)
+2. Observe the hero section, navigation bar, and overall layout
+3. Check that the Neoa branding and logo appear
+4. Scroll down to see all sections","Hero section with headline is visible. Navigation shows Login/Sign Up buttons. Page uses Neoa design system (dark theme, glassmorphism). No broken layouts or missing images.",,,
+M1-02,Module 1: Design System,Responsive Design,Guest (No Login),,Mobile responsiveness check,"1. Open browser DevTools (F12)
+2. Toggle device toolbar (Ctrl+Shift+M)
+3. Test at 375px (iPhone), 768px (iPad), 1920px (Desktop)
+4. Check navigation collapses to hamburger menu on mobile
+5. Verify no horizontal overflow at any breakpoint","Layout adapts smoothly. Nav collapses on mobile. Text remains readable. Images scale properly. No horizontal scroll bars appear.",,,
+M1-03,Module 1: Design System,How It Works Section,Guest (No Login),,How It Works section renders,"1. Scroll to the 'How It Works' section on the landing page
+2. Verify 3-step flow is displayed (Browse → Pay Securely → Receive)
+3. Check icons/illustrations load
+4. Hover over cards if interactive","Three-step flow clearly visible with icons. Steps explain escrow model. Cards may have hover effects. Section is properly spaced.",,,
+M1-04,Module 1: Design System,Footer & Navigation,Guest (No Login),,Footer and global nav links work,"1. Scroll to page bottom
+2. Check footer has copyright info and useful links
+3. Click catalog/browse link in nav
+4. Click any footer links
+5. Check social media icons if present","Footer renders with copyright and links. Navigation links route correctly without 404. Links open in current tab or new tab as appropriate.",,,
+M2-01,Module 2: Authentication,Sign Up (Buyer),Guest (No Login),,New buyer registration flow,"1. Click Sign Up / Register
+2. Fill: Email=newbuyer.test@neoa.com, Password=TestPass2026!, Full Name=Test New Buyer
+3. Select role 'Buyer' if role selection exists
+4. Submit the form
+5. Check for confirmation message or email verification notice","Account is created. User sees confirmation or is redirected to login/dashboard. If email confirmation is enabled, a message says 'Check your email'. Profile is created in the database with role=BUYER.",,,
+M2-02,Module 2: Authentication,Login (Buyer),Buyer,testbuyer@afia.com,Buyer login with valid credentials,"1. Navigate to Login page
+2. Enter: Email=testbuyer@afia.com, Password=NeoaTest2026!
+3. Click Login
+4. Wait for redirect","Login succeeds. User is redirected to the Buyer Dashboard. Navigation shows user name 'Amara Obi'. No error toast appears.",,,
+M2-03,Module 2: Authentication,Login (Vendor),Vendor,testvendor@afia.com,Vendor login with valid credentials,"1. Navigate to Login page (logout first if needed)
+2. Enter: Email=testvendor@afia.com, Password=NeoaTest2026!
+3. Click Login
+4. Wait for redirect","Login succeeds. Redirected to Vendor Dashboard. Navigation shows 'Chidi Eze (Lagos Vendor)'. Vendor menu items visible (Products, Orders, Settings).",,,
+M2-04,Module 2: Authentication,Login (Admin),Super Admin,testadmin@afia.com,Admin login with valid credentials,"1. Navigate to Login page (logout first if needed)
+2. Enter: Email=testadmin@afia.com, Password=NeoaTest2026!
+3. Click Login
+4. Wait for redirect","Login succeeds. Redirected to Admin Dashboard (God Mode). Shows admin nav with: Analytics, Vendors, Buyers, Disputes, Payouts, KYC Review, Audit Log.",,,
+M2-05,Module 2: Authentication,Login Failure,Guest (No Login),,Login with wrong password,"1. Go to Login page
+2. Enter: Email=testbuyer@afia.com, Password=WrongPassword123
+3. Click Login","Login fails. Error message displayed (e.g. 'Invalid login credentials'). User stays on login page. No crash.",,,
+M2-06,Module 2: Authentication,Logout,Buyer,testbuyer@afia.com,Logout flow,"1. Login as Test Buyer
+2. Find and click Logout button (usually in nav dropdown or sidebar)
+3. Observe redirect","User is logged out. Redirected to landing page or login page. Protected routes are no longer accessible. Session is cleared.",,,
+M2-07,Module 2: Authentication,Route Protection,Guest (No Login),,Access protected route without auth,"1. While logged out, navigate directly to /dashboard in the browser URL bar
+2. Try /vendor/products
+3. Try /admin","All attempts redirect to the Login page. No dashboard content is leaked. Auth guard works for all protected routes.",,,
+M2-08,Module 2: Authentication,Role-Based Access,Buyer,testbuyer@afia.com,Buyer cannot access vendor/admin routes,"1. Login as Test Buyer
+2. Navigate directly to /vendor/products in URL bar
+3. Navigate directly to /admin
+4. Check behavior","Both routes redirect buyer away (to buyer dashboard or show 'Unauthorized'). Buyer cannot see vendor products management or admin panel.",,,
+M3-01,Module 3: Product Catalog,Browse All Products,Buyer,testbuyer@afia.com,Catalog page shows all active products,"1. Login as Buyer
+2. Navigate to Catalog / Browse page
+3. Scroll through product listings","Catalog shows all 7+ active products. Each card shows: product title, price (USD), image placeholder, vendor name. Products are from both vendors.",,,
+M3-02,Module 3: Product Catalog,Product Detail,Buyer,testbuyer@afia.com,View single product details,"1. Click on 'Nike Air Max 90' product card
+2. Observe detail page","Detail page shows: Title='Nike Air Max 90', Price=$150.00, Description, Stock count (15 available), Vendor name, Add to Cart / Buy Now button. Back button works.",,,
+M3-03,Module 3: Product Catalog,Search & Filter,Buyer,testbuyer@afia.com,Search and filter products,"1. Use search bar (if present) to search 'Samsung'
+2. Try category filter 'Electronics'
+3. Try sorting by price (if available)","Search returns 'Samsung Galaxy Buds Pro'. Category filter narrows to Electronics products only. Results update without full page reload.",,,
+M3-04,Module 3: Product Catalog,Out of Stock Handling,Buyer,testbuyer@afia.com,Product with low stock shows warning,"1. Find 'clothes' product (stock_count=1)
+2. Check if low stock indicator appears
+3. Try adding more than 1 to cart","Low stock warning or 'Only 1 left' message appears. Cannot add more than available stock to cart. Validation prevents over-ordering.",,,
+M3-05,Module 3: Product Catalog,Vendor Product Management,Vendor,testvendor@afia.com,Vendor sees their own products only,"1. Login as Vendor
+2. Navigate to Products management page
+3. Verify product list","Vendor sees their own products (Nike Air Max, Samsung Buds, Handmade Wallet, ACCESSORIES, clothes). Does NOT see International Vendor's products.",,,
+M3-06,Module 3: Product Catalog,Add New Product,Vendor,testvendor@afia.com,Vendor creates a new product listing,"1. Login as Vendor
+2. Go to Products → Add New Product
+3. Fill: Title='Test Headphones', Price=45.00, Category='Electronics', Stock=20, Description='Wireless noise-cancelling headphones'
+4. Upload an image if possible
+5. Submit","Product is created and appears in the vendor's product list. Shows as 'Active'. Appears in the public catalog for buyers to see.",,,
+M3-07,Module 3: Product Catalog,Edit Product,Vendor,testvendor@afia.com,Vendor edits an existing product,"1. Login as Vendor
+2. Go to Products management
+3. Click Edit on 'Handmade Leather Wallet'
+4. Change price from $34.77 to $39.99
+5. Save","Price updates to $39.99 in the vendor dashboard and in the public catalog. Edit confirmation message appears.",,,
+M3-08,Module 3: Product Catalog,Toggle Product Active/Inactive,Vendor,testvendor@afia.com,Vendor deactivates a product,"1. Login as Vendor
+2. Go to Products
+3. Toggle 'clothes' product to Inactive
+4. Check catalog as buyer (login switch)","Product is marked inactive. It disappears from the public catalog for buyers. Vendor can still see it in their dashboard as 'Inactive'. Can reactivate.",,,
+M4-01,Module 4: Checkout & Escrow,Add to Cart,Buyer,testbuyer@afia.com,Add product to cart,"1. Login as Buyer
+2. Browse catalog
+3. Click 'Buy Now' or 'Add to Cart' on 'Samsung Galaxy Buds Pro' ($100.00)
+4. Verify cart/checkout state","Product added. Cart shows item with correct price. Quantity defaults to 1. Total shows $100.00.",,,
+M4-02,Module 4: Checkout & Escrow,Checkout Initiation,Buyer,testbuyer@afia.com,Start checkout process,"1. From cart, click Checkout/Pay Now
+2. Review order summary
+3. Verify Paystack popup appears or payment page loads","Order summary shows: product name, quantity, price, total. Paystack payment popup/redirect initiates. Reference number is generated.",,,
+M4-03,Module 4: Checkout & Escrow,Paystack Payment (Test Mode),Buyer,testbuyer@afia.com,Complete a test payment via Paystack,"1. Start checkout for any product
+2. In Paystack popup, use test card: 4084 0840 8408 4081 (any future expiry, any CVV, PIN: 0000, OTP: 123456)
+3. Complete payment
+4. Observe success redirect","Payment completes. User sees 'Payment Successful' confirmation. Order is created with status=PAID. Escrow entry is created with status=LOCKED. Product stock decrements by 1.",,,
+M4-04,Module 4: Checkout & Escrow,Order Confirmation After Payment,Buyer,testbuyer@afia.com,Order appears in buyer's order list,"1. After successful payment (M4-03)
+2. Navigate to My Orders page
+3. Find the new order","New order appears at top of list. Status shows 'PAID'. Reference number matches. Amount is correct. Escrow status shows 'LOCKED'.",,,
+M4-05,Module 4: Checkout & Escrow,Payment Cancellation,Buyer,testbuyer@afia.com,Cancel payment at Paystack popup,"1. Start checkout for any product
+2. When Paystack popup appears, click Close/Cancel
+3. Return to app","User returns to the product/cart page. No order is created. Stock is not decremented. No error shown (graceful cancel).",,,
+M4-06,Module 4: Checkout & Escrow,Escrow Verification,Buyer,testbuyer@afia.com,Verify escrow is created on payment,"1. After a successful payment
+2. Go to order detail page
+3. Check escrow section / vault indicator","Order detail shows escrow info: gross_amount, fee_amount (15%), net_payout (85%). Vault status = 'LOCKED'. Margin check = passed.",,,
+M4-07,Module 4: Checkout & Escrow,FX Rate Display,Buyer,testbuyer@afia.com,Check FX rate on USD product for NGN buyer,"1. View a product priced in USD
+2. Check if NGN equivalent is displayed
+3. During checkout, verify rate info","Product shows USD price. If buyer's currency detection is working, NGN equivalent or FX notice may appear. FX rate at checkout is captured in order.",,,
+M5-01,Module 5: Logistics,Vendor Sees New Order,Vendor,testvendor@afia.com,New paid order appears for vendor,"1. Login as Vendor
+2. Go to Orders page
+3. Filter by status 'PAID'","New orders with status PAID appear. Each shows buyer name, product, amount, date. Action buttons for 'Ship' or 'Fulfill' are visible.",,,
+M5-02,Module 5: Logistics,Ship via Rail 1 (API Tracking),Vendor,testvendor@afia.com,Vendor ships order using tracking ID,"1. Login as Vendor
+2. Find a PAID order
+3. Click Ship / Fulfill
+4. Enter tracking: 'DHL: 5551234567'
+5. Submit","Order status changes to 'SHIPPED'. Tracking ID recorded. shipped_at timestamp set. Buyer should receive notification. shipping_type = 'API_AUTOMATED'.",,,
+M5-03,Module 5: Logistics,Ship via Rail 2 (Manual Waybill),Vendor,testvendor@afia.com,Vendor ships via waybill upload,"1. Login as Vendor
+2. Find a PAID order
+3. Choose Manual Waybill option
+4. Upload waybill photo (any .jpg)
+5. Enter courier phone: +2348012345678
+6. Set estimated delivery date: 5 days from now
+7. Submit","Order status changes to 'SHIPPED'. shipping_type='MANUAL_WAYBILL'. Waybill URL stored. Courier phone recorded. EDD set. Buyer notified.",,,
+M5-04,Module 5: Logistics,Buyer Confirms Delivery,Buyer,testbuyer@afia.com,Buyer confirms receiving shipped order,"1. Login as Buyer
+2. Go to My Orders
+3. Find order with status 'SHIPPED'
+4. Click 'Confirm Delivery' button","Order status changes to 'DELIVERED'. delivered_at timestamp set. auto_release_at set to 48 hours from now. Message shows '48-hour dispute window started'. Vendor notified.",,,
+M5-05,Module 5: Logistics,Order Status Tracking,Buyer,testbuyer@afia.com,Check order lifecycle status display,"1. Login as Buyer
+2. Go to order detail for existing orders
+3. Check status indicators for different states (PAID → SHIPPED → DELIVERED → COMPLETED)","Status is displayed with visual indicators (icons, badge, timeline). Each state shows relevant timestamps. Tracking info visible for shipped orders.",,,
+M5-06,Module 5: Logistics,Confirm Delivery Gate Check,Buyer,testbuyer@afia.com,Cannot confirm delivery on non-SHIPPED order,"1. Login as Buyer
+2. Find an order with status PAID (not yet shipped)
+3. Try to confirm delivery","'Confirm Delivery' button is disabled or hidden for non-SHIPPED orders. Error message if attempted via URL manipulation.",,,
+M6-01,Module 6: Dispute Resolution,File a Dispute,Buyer,testbuyer@afia.com,Buyer files dispute on delivered order,"1. Login as Buyer
+2. Find the DELIVERED international order (DHL tracking)
+3. Click 'Report Issue' / 'File Dispute'
+4. Select category: 'WRONG_ITEM'
+5. Write reason: 'Received incorrect model number. Expected X, got Y.'
+6. Submit","Dispute filed. Order status changes to 'DISPUTED'. is_disputed=true. Auto-release timer paused. Vendor receives dispute notification. Buyer sees dispute confirmation.",,,
+M6-02,Module 6: Dispute Resolution,Dispute Window Enforcement,Buyer,testbuyer@afia.com,Cannot dispute after 48h window expires,"1. Find an order where auto_release_at is in the past
+2. Try to file a dispute
+3. Check error message","System rejects the dispute with message 'The 48-hour dispute window has expired'. Order remains in its current state.",,,
+M6-03,Module 6: Dispute Resolution,Admin Views Disputes,Super Admin,testadmin@afia.com,Admin sees all disputed orders,"1. Login as Admin
+2. Navigate to Disputes section
+3. Review the dispute list","Dispute list shows active disputed order(s). Each entry shows: order ID, buyer & vendor names, dispute category, reason, evidence, timestamps. The Samsung Buds WRONG_ITEM dispute is visible.",,,
+M6-04,Module 6: Dispute Resolution,Admin Resolves Dispute (Force Complete),Super Admin,testadmin@afia.com,Admin resolves dispute in vendor's favor,"1. Login as Admin
+2. Go to Disputes
+3. Click on the active WRONG_ITEM dispute
+4. Click 'Resolve'
+5. Select outcome: 'COMPLETED' (vendor gets paid)
+6. Add notes: 'Evidence inconclusive. Vendor payout authorized.'
+7. Submit","Order status changes to COMPLETED. Escrow status changes to RELEASED. Both buyer and vendor receive notification. Audit log entry created. Trust score may recalculate.",,,
+M6-05,Module 6: Dispute Resolution,Admin Resolves Dispute (Refund),Super Admin,testadmin@afia.com,Admin resolves dispute in buyer's favor,"1. (Use a different disputed order or re-dispute)
+2. Login as Admin
+3. Select a dispute
+4. Choose 'REFUNDED' outcome
+5. Add notes: 'Clear evidence of wrong item shipped.'
+6. Submit","Order status changes to REFUNDED. Escrow status changes to FROZEN/REFUNDED. Paystack refund may be initiated. Both parties notified. Audit entry logged.",,,
+M6-06,Module 6: Dispute Resolution,Admin Adds Notes to Dispute,Super Admin,testadmin@afia.com,Admin writes investigation notes,"1. Login as Admin
+2. Go to an active dispute
+3. Add investigation notes without resolving
+4. Save","Notes are saved. Admin can see notes on return. Notes persist across sessions. No status change occurs.",,,
+M7-01,Module 7: Admin Panel,Analytics Dashboard,Super Admin,testadmin@afia.com,Admin analytics overview loads,"1. Login as Admin
+2. Navigate to Analytics section
+3. Review dashboard cards","Dashboard shows: Total Escrowed (LOCKED), Released This Week, Active Orders, Dispute Rate %, Total Vendors, Pending Payouts. Numbers match actual data.",,,
+M7-02,Module 7: Admin Panel,Vendor Management List,Super Admin,testadmin@afia.com,Admin sees all vendors with stats,"1. Login as Admin
+2. Go to Vendor Management
+3. Review vendor list","Lists all 3 vendors with: name, KYC status, flag status, total orders, dispute rate, total escrowed, KYC velocity alert. International vendor shows settlement_currency=USD.",,,
+M7-03,Module 7: Admin Panel,Flag Vendor,Super Admin,testadmin@afia.com,Admin flags a suspicious vendor,"1. Login as Admin
+2. Go to Vendor Management
+3. Find 'New Vendor (Unverified)'
+4. Click Flag
+5. Enter reason: 'Suspicious listing patterns'
+6. Submit","Vendor is flagged. is_flagged=true. All LOCKED escrow for vendor freezes to FROZEN. Flag badge appears on vendor card. Audit log entry created.",,,
+M7-04,Module 7: Admin Panel,Unflag Vendor,Super Admin,testadmin@afia.com,Admin unflags a vendor after review,"1. After M7-03
+2. Find the flagged vendor
+3. Click Unflag
+4. Submit","Vendor unflagged. is_flagged=false. Flag badge removed. Audit log entry created. (Escrow does NOT auto-unfreeze — admin must handle manually).",,,
+M7-05,Module 7: Admin Panel,Treasury Mode Toggle,Super Admin,testadmin@afia.com,Admin switches vendor treasury to MANUAL_HOLD,"1. Login as Admin
+2. Go to Vendor Management
+3. Find 'Chidi Eze (Lagos Vendor)'
+4. Toggle Treasury from AUTO to MANUAL_HOLD","Treasury mode changes. Vendor's payouts are now held until admin manually releases. Audit log entry created.",,,
+M7-06,Module 7: Admin Panel,Buyer Management,Super Admin,testadmin@afia.com,Admin sees buyer list with trust scores,"1. Login as Admin
+2. Navigate to Buyer Management
+3. Review list","All buyers listed with: name, trust score, order stats (total, completed, disputed). Amara Obi shows trust_score=85. David Mensah shows trust_score=50.",,,
+M7-07,Module 7: Admin Panel,Adjust Trust Score,Super Admin,testadmin@afia.com,Admin adjusts a buyer's trust score,"1. Login as Admin
+2. Go to Buyer Management
+3. Find 'David Mensah'
+4. Set score to 30
+5. Save","Trust score updated from 50 to 30. Audit log entry shows previous and new score. Change persists on page refresh.",,,
+M7-08,Module 7: Admin Panel,Audit Log,Super Admin,testadmin@afia.com,Admin views the immutable audit trail,"1. Login as Admin
+2. Navigate to Audit Log
+3. Browse through entries
+4. Check pagination if >50 entries","Audit log shows all admin actions: dispute resolutions, vendor flags, KYC approvals, trust score adjustments. Each entry shows admin name, action, target, timestamp. Entries are in reverse chronological order.",,,
+M7-09,Module 7: Admin Panel,Payout Queue,Super Admin,testadmin@afia.com,Admin sees orders ready for payout,"1. Login as Admin
+2. Navigate to Payout Queue
+3. Review queue entries","Queue shows DELIVERED orders past auto_release time with LOCKED escrow. Shows: vendor name, net payout, settlement currency, vault status. Margin drift warnings if applicable.",,,
+M7-10,Module 7: Admin Panel,Batch Payout Execution,Super Admin,testadmin@afia.com,Admin executes batch payout (test mode),"1. Login as Admin
+2. Go to Payout Queue
+3. Select orders for payout
+4. Click Execute Batch Payout
+5. Enter master password when prompted
+6. Confirm","Batch payout processes. Each order shows result: RELEASED, SKIPPED (with reason), or FAILED. Escrow moves to RELEASE_PENDING. Audit log records the batch action. Total payout amount shown.",,,
+M8-01,Module 8: Payment Integration,KYC Submission (Sandbox),Vendor,beloved.johnchidi@gmail.com,Unverified vendor submits KYC,"1. Login as unverified vendor (beloved.johnchidi@gmail.com / NeoaTest2026!)
+2. Navigate to Settings or KYC section
+3. Select Country: NG
+4. Select ID Type: BVN
+5. Enter test ID: 00000000001 (sandbox VERIFIED)
+6. Submit","In sandbox mode: KYC instantly returns VERIFIED. Profile updates to kyc_level=VERIFIED, kyc_tier=TIER_1. Vendor can now list products and receive payouts. Notification sent.",,,
+M8-02,Module 8: Payment Integration,KYC Rejection (Sandbox),Vendor,beloved.johnchidi@gmail.com,KYC rejected with test ID 00000000002,"1. Login as unverified vendor
+2. Submit KYC with test ID: 00000000002
+3. Observe result","KYC returns REJECTED. Profile shows kyc_level=REJECTED. Rejection reason displayed. Vendor cannot proceed to sell until re-verified or admin approves.",,,
+M8-03,Module 8: Payment Integration,Bank Account Setup (NGN),Vendor,testvendor@afia.com,Vendor sets up NGN bank account,"1. Login as Vendor
+2. Go to Settings → Bank Account
+3. Enter Account Number: 0123456789
+4. Select Bank: GTBank (code: 058)
+5. Submit","Bank account verified via Paystack Resolve Account. Account name auto-populated. Paystack recipient code created. Bank details saved to profile.",,,
+M8-04,Module 8: Payment Integration,FX Rate API,Buyer,testbuyer@afia.com,Check live FX rates,"1. Login as Buyer
+2. Navigate to a product detail
+3. Check if USD→NGN rate is displayed
+4. Or directly test: /api/fx-rates?from=USD&to=NGN","FX rate returned with source (wise_live or fallback_static). Rate is reasonable (e.g. 1 USD = ~1500-1700 NGN). Timestamp is current.",,,
+M8-05,Module 8: Payment Integration,Admin Manual KYC Review,Super Admin,testadmin@afia.com,Admin manually approves KYC (admin_manual mode),"1. Login as Admin
+2. Go to KYC Review section
+3. Find vendors with PENDING status
+4. Click Approve with tier TIER_1
+5. Add notes: 'Documents verified manually via admin review'","Vendor is approved. kyc_level=VERIFIED, kyc_tier=TIER_1. Audit log entry created with admin decision. Vendor can now sell.",,,
+M8-06,Module 8: Payment Integration,Mark International Payout as Paid,Super Admin,testadmin@afia.com,Admin marks Wise payout as completed,"1. Login as Admin
+2. Go to Payout Queue
+3. Find international vendor order (WISE_GLOBAL rail)
+4. Click 'Mark as Paid'
+5. Enter Wise Reference: WISE-MANUAL-001
+6. Enter master password","Order moves to COMPLETED. Escrow moves to RELEASED. wise_transfer_id stored. Audit log records manual payout with Wise reference.",,,
+M9-01,Module 9: Notifications,Notification Bell / Badge,Buyer,testbuyer@afia.com,Unread notification count displays,"1. Login as Buyer
+2. Look for notification bell icon in the header
+3. Check if unread count badge is visible","Notification bell/icon is present. Unread count shows as a badge number. Count matches actual unread notifications.",,,
+M9-02,Module 9: Notifications,View Notification Feed,Buyer,testbuyer@afia.com,Open and browse notifications,"1. Click the notification bell
+2. Browse the notification list
+3. Check notification types and content","Notification dropdown/page shows list in reverse chronological order. Each notification has: title, body, type icon, timestamp. Shows ORDER_CONFIRMED, WAYBILL_UPLOADED, etc.",,,
+M9-03,Module 9: Notifications,Mark as Read,Buyer,testbuyer@afia.com,Mark notification as read,"1. Click on an unread notification
+2. Or click 'Mark All as Read'
+3. Verify count updates","Individual notification turns read (visual change). Or all marked as read. Unread count decrements accordingly. Persists on refresh.",,,
+M9-04,Module 9: Notifications,Real-time Notifications,Buyer,testbuyer@afia.com,Receive real-time push notification,"1. Stay logged in as Buyer in one tab
+2. In another session, trigger an action (e.g., vendor ships an order)
+3. Check if notification appears without refresh","Toast notification appears automatically. Notification bell count increments. New notification appears at top of feed without manual refresh. Supabase Realtime is working.",,,
+M10-01,Module 10: Security,Device Fingerprint Storage,Buyer,testbuyer@afia.com,Device fingerprint captured on login,"1. Login as Buyer
+2. Check browser console for PostHog/fingerprinting activity
+3. (Admin can verify in profiles table)","device_fingerprint column populated in profile. last_login_ip recorded. No user-facing action required — this is background security.",,,
+M10-02,Module 10: Security,Sybil Detection,Super Admin,testadmin@afia.com,Admin checks for duplicate device accounts,"1. Login as Admin
+2. Navigate to Sybil Detection (if available in admin panel)
+3. Review matched accounts","Shows accounts sharing device fingerprints. Buyer+Vendor combos flagged as HIGH risk. Same-role duplicates flagged as MEDIUM. Shows usernames and roles.",,,
+M10-03,Module 10: Security,RLS Policy Enforcement,Buyer,testbuyer@afia.com,Buyer cannot see other buyers' orders,"1. Login as Buyer (Amara Obi)
+2. Note your own order IDs
+3. Try to access another buyer's order by manipulating URL (e.g. use David's order ID)","API returns 404 or 403. Buyer cannot see orders they don't own. RLS policies block cross-user data access.",,,
+M10-04,Module 10: Security,Rate Limiting,Guest (No Login),,API rate limiting works,"1. Send rapid successive requests to /api/fx-rates (10+ in quick succession)
+2. Observe response codes","After threshold, API returns 429 Too Many Requests. Rate limiter message appears. Normal requests resume after cooldown period.",,,
+M10-05,Module 10: Security,Input Sanitization,Buyer,testbuyer@afia.com,XSS and injection prevention,"1. During product search, enter: <script>alert('xss')</script>
+2. In dispute reason, enter HTML tags
+3. Check that inputs are sanitized","No script execution. HTML tags are escaped/stripped. Input rendered as plain text. Application continues to function normally.",,,
+ME2E-01,End-to-End Flow,Complete Purchase Lifecycle,Buyer + Vendor + Admin,"testbuyer@afia.com, testvendor@afia.com, testadmin@afia.com",Full order lifecycle test,"1. LOGIN AS BUYER: Browse catalog → Buy 'Handmade Leather Wallet' → Pay via Paystack test card
+2. LOGIN AS VENDOR: See new PAID order → Ship via Rail 1 (tracking: 'FedEx: E2E-TEST-001')
+3. LOGIN AS BUYER: See order is SHIPPED → Confirm Delivery
+4. WAIT: 48h dispute window starts
+5. LOGIN AS BUYER: Do NOT dispute → Let timer progress
+6. LOGIN AS ADMIN: Go to Payout Queue → Execute payout for this order","Full lifecycle completes: PAID → SHIPPED → DELIVERED → (48h wait) → COMPLETED. Escrow: LOCKED → RELEASE_PENDING → RELEASED. All parties receive notifications at each step. Audit trail complete.",,,
+ME2E-02,End-to-End Flow,Dispute & Refund Lifecycle,Buyer + Vendor + Admin,"testbuyer@afia.com, testvendor@afia.com, testadmin@afia.com",Full dispute and refund flow,"1. LOGIN AS BUYER: Buy 'Samsung Galaxy Buds Pro' → Pay via Paystack
+2. LOGIN AS VENDOR: Ship the order (Rail 2 with waybill)
+3. LOGIN AS BUYER: Confirm Delivery → File Dispute (category: NOT_RECEIVED, reason: 'Package was empty')
+4. LOGIN AS ADMIN: Review dispute → Resolve as REFUNDED with notes
+5. VERIFY: Check escrow is FROZEN/REFUNDED","Full dispute lifecycle: PAID → SHIPPED → DELIVERED → DISPUTED → REFUNDED. Escrow: LOCKED → FROZEN/REFUNDED. Paystack refund initiated. Both parties notified. Audit trail complete.",,,
+ME2E-03,End-to-End Flow,Vendor Onboarding Flow,Vendor,beloved.johnchidi@gmail.com,New vendor setup and first sale,"1. Login as unverified vendor
+2. Submit KYC (use sandbox test ID: 00000000001)
+3. Set up bank account (if available)
+4. Add a new product listing
+5. Switch to buyer account → Buy the new product
+6. Switch back to vendor → Ship the order","Complete vendor onboarding: KYC verified → TIER_1. Bank account saved. Product listed and visible in catalog. First sale processes. Vendor sees order and can ship.",,,
+ME2E-04,End-to-End Flow,International Vendor Payout,Buyer + Admin,"testbuyer@afia.com, testadmin@afia.com",International payout via Wise rail,"1. LOGIN AS BUYER: Buy 'MacBook Pro Charger' ($79 from international vendor)
+2. LOGIN AS ADMIN: After delivery confirmed, find in payout queue
+3. Note it says 'WISE_GLOBAL' rail — requires manual processing
+4. Use 'Mark as Paid' with Wise reference: WISE-E2E-001","International order processes correctly. Payout rail = WISE_GLOBAL. Admin must manually mark as paid (not batch). After marking: order=COMPLETED, escrow=RELEASED.",,,
