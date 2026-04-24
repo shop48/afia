@@ -90,20 +90,30 @@ app.onError((err, c) => {
 app.use('*', async (c, next) => {
   const isDev = c.env.ENVIRONMENT !== 'production'
 
-  // Production: ONLY allow the configured FRONTEND_URL
-  // Development: also allow localhost origins for dev servers
+  // Production: ONLY allow the configured FRONTEND_URL + known aliases
+  // Development: also allow localhost origins + pages.dev for dev/staging
+  const productionOrigins = [
+    c.env.FRONTEND_URL || 'https://neoa-gm.com',
+    'https://neoa-gm.com',
+    'https://www.neoa-gm.com',
+  ].filter(Boolean)
+
   const allowedOrigins = isDev
     ? [
-      c.env.FRONTEND_URL || 'http://localhost:5173',
+      ...productionOrigins,
+      'https://neoa-app.pages.dev',
+      'https://neoa-web.pages.dev',
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:5175',
       'http://localhost:4173',
     ]
-    : [c.env.FRONTEND_URL].filter(Boolean)
+    : productionOrigins
 
+  // Also allow *.pages.dev preview URLs in dev mode
   const origin = c.req.header('Origin') || ''
-  const isAllowed = allowedOrigins.includes(origin)
+  const isPagesPreview = isDev && origin.endsWith('.pages.dev')
+  const isAllowed = allowedOrigins.includes(origin) || isPagesPreview
   const allowedOrigin = isAllowed ? origin : (allowedOrigins[0] || '')
 
   // CORS headers
